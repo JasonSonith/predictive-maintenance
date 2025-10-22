@@ -1,0 +1,28 @@
+# core
+numpy
+pandas
+scikit-learn
+scipy
+pyarrow
+
+# viz + reports
+matplotlib
+plotly
+rich
+tqdm
+
+# explainability
+shap
+joblib
+
+# config
+PyYAML
+
+# optional dashboard
+streamlit
+
+# tests
+pytest
+
+# optional deep models (uncomment if needed)
+# torch
