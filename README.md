@@ -14,7 +14,7 @@ Simple pipeline for anomaly detection on machine data. CPU only. Config-driven a
 ```
 predictive-maintenance/
 ├─ configs/
-├─ data/              # raw/interim/processed (gitignored)
+├─ data/              
 ├─ notebooks/
 ├─ src/pdlite/
 ├─ scripts/
