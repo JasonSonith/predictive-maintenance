@@ -13,15 +13,20 @@ Simple pipeline for anomaly detection on machine data. CPU only. Config-driven a
 ## Folder layout
 ```
 predictive-maintenance/
-├─ configs/
-├─ data/              
-├─ notebooks/
-├─ src/pdlite/
-├─ scripts/
-├─ artifacts/
-├─ dashboards/
-├─ tests/
-└─ docs/
+├─ README.md             # what this project is and how to run it
+├─ requirements.txt      # Python packages to install
+├─ configs/              # settings for data and models
+├─ data/                 # your files
+│  ├─ raw/               # original files you downloaded
+│  ├─ clean/             # cleaned versions
+│  └─ features/          # numbers made from the data
+├─ src/                  # the Python code
+├─ scripts/              # small commands you run (prepare, train, evaluate)
+├─ notebooks/            # Jupyter/Colab experiments and charts
+├─ results/              # what the runs produce
+│  ├─ models/            # saved trained models
+│  └─ reports/           # metrics, plots, run logs
+└─ docs/                 # short guides and notes
 ```
 
 ## Install
