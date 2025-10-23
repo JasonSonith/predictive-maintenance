@@ -22,3 +22,5 @@
 - **Time-to-detection:** How fast a warning comes up after a fault starts
 - **Mean time between false alarms:** how noisy the system is
 
+## Improve it over time
+- Save all data, alerts, and operator labels ("real issue" vs "false positive")
