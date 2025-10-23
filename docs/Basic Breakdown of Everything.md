@@ -33,5 +33,7 @@
 - When that happens, retrain and re-set the cutoff
 
 ## What to ship for the class
-
+- A script/notebook to train, save, and run the model on a stream or file
+- Config files in `.yaml` with thresholds
+- Sample daa and a qui
 
