@@ -14,4 +14,4 @@
 ## Alerting
  - Each model outputs a score that says how abnormal the latest data looks, the high the more unusual. 
  - Use a cutoff to detect anomalies. 
- - If score > cut
+ - If score > cutoff, flag anomaly 
