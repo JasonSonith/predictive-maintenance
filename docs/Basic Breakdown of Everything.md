@@ -18,4 +18,5 @@
 
 ## What to Measure
 - **Precision:** When you alert or flag, how is it real, false positive, or a false negative
-- **PR-AUC:** 
+- **PR-AUC:** A single number that tells you how well the model finds rare problems without spamming false positives. The higher the better. 
+- 
