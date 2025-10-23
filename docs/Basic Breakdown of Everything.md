@@ -28,3 +28,9 @@
 - Adjust this cutoff if you're getting too many or too few alerts
 - Do this on a schedule (every quarter) or when a drift is detected
 
+## Drift Check
+- If normal behavior shifts, the score moves
+- When that happens, retrain and re-set the cutoff
+
+## Output that humans can use
+
