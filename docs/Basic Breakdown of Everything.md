@@ -24,4 +24,7 @@
 
 ## Improve it over time
 - Save all data, alerts, and operator labels ("real issue" vs "false positive")
-- 
+- Retrain models on new "normal" data and any labeled faults
+- Adjust this cutoff if you're getting too many or too few alerts
+- Do this on a schedule (every quarter) or when a drift is detected
+
