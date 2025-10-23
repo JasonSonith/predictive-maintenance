@@ -32,5 +32,6 @@
 - If normal behavior shifts, the score moves
 - When that happens, retrain and re-set the cutoff
 
-## Output that humans can use
+## What to ship for the class
+
 
