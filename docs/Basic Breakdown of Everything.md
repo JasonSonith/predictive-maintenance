@@ -17,4 +17,5 @@
  - If score > cutoff, flag anomaly 
 
 ## What to Measure
-- **Precision:** 
+- **Precision:** When you alert or flag, how is it real, false positive, or a false negative
+- **PR-AUC:** 
