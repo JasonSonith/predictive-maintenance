@@ -4,17 +4,6 @@
       <root>
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
-        <mxCell id="sUIM7a7saVs4uXy9Xu6h-4" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="sUIM7a7saVs4uXy9Xu6h-1">
-          <mxGeometry relative="1" as="geometry">
-            <mxPoint x="170" y="380" as="targetPoint" />
-          </mxGeometry>
-        </mxCell>
-        <mxCell id="sUIM7a7saVs4uXy9Xu6h-1" value="&lt;font style=&quot;font-size: 14px;&quot; face=&quot;Georgia&quot;&gt;Sensors/PLCS&lt;/font&gt;" style="verticalAlign=top;align=left;spacingTop=8;spacingLeft=2;spacingRight=12;shape=cube;size=10;direction=south;fontStyle=4;html=1;whiteSpace=wrap;" vertex="1" parent="1">
-          <mxGeometry x="80" y="130" width="180" height="120" as="geometry" />
-        </mxCell>
-        <mxCell id="sUIM7a7saVs4uXy9Xu6h-3" value="&lt;font style=&quot;font-size: 14px;&quot; face=&quot;Georgia&quot;&gt;Ingest&lt;/font&gt;" style="verticalAlign=top;align=left;spacingTop=8;spacingLeft=2;spacingRight=12;shape=cube;size=10;direction=south;fontStyle=4;html=1;whiteSpace=wrap;" vertex="1" parent="1">
-          <mxGeometry x="80" y="390" width="180" height="120" as="geometry" />
-        </mxCell>
       </root>
     </mxGraphModel>
   </diagram>
