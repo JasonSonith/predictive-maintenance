@@ -1,0 +1,9 @@
+# keep data out of Git
+data/raw/**
+data/clean/**
+data/features/**
+
+# BUT allow DVC pointer files inside those dirs
+!data/raw/**/*.dvc
+!data/clean/**/*.dvc
+!data/features/**/*.dvc
