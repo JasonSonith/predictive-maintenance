@@ -16,7 +16,7 @@
  - Use a cutoff to detect anomalies. 
  - If score > cutoff, flag anomaly 
 
-## What to Measure
+##  Measurements
 - **Precision:** When you alert or flag, how is it real, false positive, or a false negative
 - **PR-AUC:** A single number that tells you how well the model finds rare problems without spamming false positives. The higher the better. 
 - **Time-to-detection:** How fast a warning comes up after a fault starts
