@@ -1,0 +1,6 @@
+outs:
+- md5: 1f4ca6ec20adbbe888f0837be4dd3ffa.dir
+  size: 87607144
+  nfiles: 22
+  hash: md5
+  path: cwru
