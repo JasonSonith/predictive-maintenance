@@ -1,7 +1,10 @@
-﻿# Keep big data out of Git
+﻿# ignore big data/artifacts
 data/raw/**
 data/clean/**
 data/features/**
+results/**
 
-# Allow tiny demo samples if needed
-!data/raw/samples/**
+# allow DVC pointer files inside ignored dirs (if you ever write them there)
+!data/raw/**/*.dvc
+!data/clean/**/*.dvc
+!data/features/**/*.dvc
