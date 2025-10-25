@@ -1,0 +1,7 @@
+﻿# Keep big data out of Git
+data/raw/**
+data/clean/**
+data/features/**
+
+# Allow tiny demo samples if needed
+!data/raw/samples/**
