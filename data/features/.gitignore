@@ -1,9 +1,1 @@
-# keep big data out of Git
-data/raw/**
-data/clean/**
-data/features/**
 
-# BUT allow DVC pointer files inside ignored dirs
-!data/raw/**/*.dvc
-!data/clean/**/*.dvc
-!data/features/**/*.dvc
