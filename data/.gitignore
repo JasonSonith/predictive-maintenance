@@ -10,4 +10,7 @@ data/features/**
 !data/raw/**/*.zip
 !data/clean/**/*.zip
 !data/features/**/*.zip
+!data/raw/**/.gitattributes
+
+
 
