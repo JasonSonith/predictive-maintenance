@@ -8,6 +8,9 @@ results/**
 !data/raw/**/*.dvc
 !data/clean/**/*.dvc
 !data/features/**/*.dvc
+!data/raw/**/*.zip
+!data/clean/**/*.zip
+!data/features/**/*.zip
 # allow parent dirs so un-ignored files inside can be added
 !data/
 !data/raw/

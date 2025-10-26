@@ -1,6 +1,5 @@
 ﻿# Normalize text files to LF in repo
 * text=auto eol=lf
-
 # Data/binaries: no EOL conversion
 data/** -text
 *.zip  -text
@@ -10,7 +9,6 @@ data/** -text
 *.png  -text
 *.jpg  -text
 *.pdf  -text
-
 # Common text sources
 *.py    text eol=lf
 *.ipynb text eol=lf
@@ -19,7 +17,7 @@ data/** -text
 *.yaml  text eol=lf
 *.csv   text eol=lf
 *.txt   text eol=lf
-
 # Windows-native scripts can keep CRLF
 *.ps1   text eol=crlf
 *.bat   text eol=crlf
+.zip filter=lfs diff=lfs merge=lfs -text
