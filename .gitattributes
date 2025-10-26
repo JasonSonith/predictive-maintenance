@@ -2,7 +2,7 @@
 * text=auto eol=lf
 # Data/binaries: no EOL conversion
 data/** -text
-*.zip  -text
+*.zip filter=lfs diff=lfs merge=lfs -text
 *.mat  -text
 *.npz  -text
 *.parquet -text
