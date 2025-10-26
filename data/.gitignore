@@ -7,3 +7,7 @@ data/features/**
 !data/raw/**/*.dvc
 !data/clean/**/*.dvc
 !data/features/**/*.dvc
+!data/raw/**/*.zip
+!data/clean/**/*.zip
+!data/features/**/*.zip
+
