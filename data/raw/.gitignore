@@ -1,0 +1,7 @@
+﻿# Ignore everything in this folder...
+*
+
+# ...but keep zip files and this .gitignore
+!*.zip
+!.gitignore
+!.gitattributes
