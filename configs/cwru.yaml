@@ -1,0 +1,117 @@
+# CWRU Dataset Configuration
+# Type: Time-series vibration data (recordings of bearing vibrations)
+# Task: Supervised learning (we have labels: healthy, ball fault, inner race fault, outer race fault)
+dataset_name: cwru
+
+# File paths - where to find input data and where to save processed outputs
+paths:
+  # Directories containing the raw CSV files with vibration signals
+  # normal_baseline: healthy/normal bearing condition files
+  # drive_end_12k: fault condition files (ball fault, inner race fault, outer race fault)
+  raw_input_dirs:
+    - data/raw/unzipped-data/cwru/normal_baseline
+    - data/raw/unzipped-data/cwru/drive_end_12k
+  # Where to save the cleaned data after processing all files
+  clean_output_path: data/clean/cwru/cwru_clean.parquet
+  # Where to save the feature-engineered data after windowing and feature extraction
+  features_output_path: data/features/cwru/cwru_features.parquet
+
+# Schema - defines the structure and types of data columns
+schema:
+  # Each CSV file has two columns: index (time point) and value (vibration amplitude)
+  # The column mapping for individual CSV files (index -> time, value -> amplitude)
+  column_map:
+    "index": time_index       # Time point/index in the signal
+    "value": vibration_amp    # Vibration amplitude measurement
+  
+  # Labels are extracted from filenames, not from columns
+  # Filename patterns indicate the condition:
+  #   - normal_baseline/*.csv = "normal" (healthy)
+  #   - B* = "ball_fault" (ball bearing fault)
+  #   - IR* = "inner_race_fault" (inner race fault)
+  #   - OR* = "outer_race_fault" (outer race fault)
+  # What we're trying to predict (the target/outcome variable)
+  target_col: fault_type
+  
+  # Fault type labels extracted from filenames
+  fault_labels:
+    - normal              # Healthy/normal bearing condition
+    - ball_fault          # Ball bearing fault (B prefix in filename)
+    - inner_race_fault    # Inner race fault (IR prefix in filename)
+    - outer_race_fault    # Outer race fault (OR prefix in filename)
+  
+  # Additional metadata extracted from filenames
+  # File naming pattern: {fault_type}{size}_{load}__X{number}_{sensor}_time.csv
+  # Example: B007_0__X118_DE_time.csv = Ball fault, 7 mils, 0 hp, Drive End sensor
+  metadata_from_filename:
+    fault_type: true      # Extract fault type from filename prefix
+    fault_size: true      # Extract fault size (007, 014, 021 mils) - optional
+    load_hp: true         # Extract load in horsepower (0, 2 hp) - optional
+    sensor_location: true # Extract sensor location (DE=Drive End, FE=Fan End, BA=Base) - optional
+  
+  # Features to extract from vibration signals (computed from windows)
+  # These will be computed during feature engineering, not from columns
+  # Common vibration features: RMS, peak-to-peak, kurtosis, skewness, mean, std, etc.
+  computed_features:
+    - rms                 # Root Mean Square (energy measure)
+    - peak_to_peak        # Maximum - Minimum amplitude
+    - kurtosis            # Measure of tail heaviness
+    - skewness            # Measure of asymmetry
+    - mean                # Average amplitude
+    - std                 # Standard deviation
+    - max                 # Maximum amplitude
+    - min                 # Minimum amplitude
+
+# Data preparation settings - how to clean and transform the data
+prep:
+  # Remove rows with missing values (true = drop incomplete rows, false = keep them)
+  drop_na: true
+  
+  # How to fill in missing values if any remain (mean = use average value)
+  # Usually not needed for vibration signals, but good to have as backup
+  impute: mean
+  
+  # How to normalize/scale numeric features (standard = mean 0, standard deviation 1)
+  # This helps the model train better by putting all features on the same scale
+  # StandardScaler is only fitted on training data, then applied to val/test
+  scale: standard
+  
+  # Whether to create time windows for sequential data (true = use windows, false = don't)
+  # CWRU is time-series data, so we MUST use windows to chop long signals into smaller chunks
+  use_windowing: true
+  
+  # Window settings for time-series data
+  window:
+    # Size of each window in samples (number of data points per window)
+    # Common sizes: 512, 1024, 2048, 4096 (powers of 2 for FFT efficiency)
+    size: 2048
+    # Step size between windows (stride)
+    # 1 = no overlap, < size = overlapping windows
+    # Overlap helps get more samples and better coverage
+    stride: 1024
+    # Whether to use overlapping windows (true) or non-overlapping (false)
+    overlap: true
+
+# Data splitting - how to divide the dataset for training and testing
+split:
+  # Method to split the data: random_percent = randomly split by percentages
+  # Alternative: by_file = split by entire files (all windows from same file go to same split)
+  method: random_percent
+  
+  # Percentage of data to use for training the model (70% of all windows)
+  train_ratio: 0.70
+  
+  # Percentage to use for validation during training (15% - used to tune hyperparameters)
+  val_ratio: 0.15
+  
+  # Percentage to use for final testing/evaluation (15% - final performance check)
+  test_ratio: 0.15
+  
+  # Keep the same proportion of fault types across train/val/test splits
+  # This ensures each split has roughly the same class balance (important for imbalanced data)
+  stratify_by: fault_type
+  
+  # Random seed to ensure reproducible splits (same seed = same split every time you run)
+  # Set to 42 for consistency - change to any number if you want a different random split
+  random_state: 42
+
