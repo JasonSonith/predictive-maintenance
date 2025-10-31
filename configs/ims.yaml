@@ -1,0 +1,164 @@
+# IMS Dataset Configuration
+# Type: Time-series vibration data (bearings run until failure)
+# Task: Unsupervised learning (anomaly detection - learn normal, flag anomalies)
+# Dataset: Real machine bearing run until actual death - starts healthy, degrades to failure
+dataset_name: ims
+
+# File paths - where to find input data and where to save processed outputs
+paths:
+  # Directory containing timestamped vibration data files from 1st test
+  # Each file is named with a timestamp (e.g., 2003.11.24.12.53.55)
+  # Files are in chronological order showing degradation from healthy to failure
+  # RECOMMENDATION: Use ALL files (~96 files spanning one full day)
+  #   - Early files = healthy bearing (training data)
+  #   - Late files = degrading/failing bearing (testing data)
+  #   - Full sequence shows complete degradation pattern
+  # Optional: Set max_files to limit for quick testing (e.g., 30 for first few hours)
+  raw_input_dir: data/raw/unzipped-data/ims/1st_test
+  # Maximum number of files to process (null/empty = use all files)
+  # Set to a number (e.g., 30) to limit processing for quick testing
+  # Leave as null to use all available files (recommended for full analysis)
+  max_files: null
+  # Where to save the cleaned data after processing all files
+  clean_output_path: data/clean/ims/ims_clean.parquet
+  # Where to save the feature-engineered data after windowing and feature extraction
+  features_output_path: data/features/ims/ims_features.parquet
+
+# Schema - defines the structure and types of data columns
+schema:
+  # Each file contains tab-separated values with 8 columns (vibration sensor channels)
+  # The column mapping for individual files
+  # Files have no headers - columns are numbered 0-7
+  column_map:
+    "0": ch1    # Channel 1 - vibration sensor measurement
+    "1": ch2    # Channel 2 - vibration sensor measurement
+    "2": ch3    # Channel 3 - vibration sensor measurement
+    "3": ch4    # Channel 4 - vibration sensor measurement
+    "4": ch5    # Channel 5 - vibration sensor measurement
+    "5": ch6    # Channel 6 - vibration sensor measurement
+    "6": ch7    # Channel 7 - vibration sensor measurement
+    "7": ch8    # Channel 8 - vibration sensor measurement
+  
+  # IMS is UNSUPERVISED - we don't have explicit labels/targets to predict
+  # Instead, we learn what "normal" looks like from early (healthy) data
+  # Then score how "weird" or "anomalous" new data is
+  # No target_col needed - this is anomaly detection, not classification
+  
+  # Features to drop before training (if any)
+  # No IDs or metadata to drop - all channels are used
+  drop_features: []
+  
+  # No categorical features - all are numeric vibration measurements
+  categorical_features: []
+  
+  # All channels are numeric vibration sensor measurements
+  numeric_features: [ch1, ch2, ch3, ch4, ch5, ch6, ch7, ch8]
+  
+  # Features to extract from vibration signals (computed from windows)
+  # These will be computed during feature engineering, not from raw columns
+  # Common vibration features: RMS, peak-to-peak, kurtosis, skewness, mean, std, etc.
+  computed_features:
+    - rms                 # Root Mean Square (energy measure) - per channel
+    - peak_to_peak        # Maximum - Minimum amplitude - per channel
+    - kurtosis            # Measure of tail heaviness - per channel
+    - skewness            # Measure of asymmetry - per channel
+    - mean                # Average amplitude - per channel
+    - std                 # Standard deviation - per channel
+    - max                 # Maximum amplitude - per channel
+    - min                 # Minimum amplitude - per channel
+    - fft_band_energy     # FFT frequency band energy (optional) - per channel
+
+# Data preparation settings - how to clean and transform the data
+prep:
+  # Remove rows with missing values (true = drop incomplete rows, false = keep them)
+  # Usually not needed for vibration signals, but good safety check
+  drop_na: true
+  
+  # How to fill in missing values if any remain (mean = use average value)
+  # This is a backup - drop_na usually removes all missing values first
+  impute: mean
+  
+  # How to normalize/scale numeric features (standard = mean 0, standard deviation 1)
+  # This helps the model train better by putting all features on the same scale
+  # StandardScaler is only fitted on training data (healthy/normal), then applied to all
+  scale: standard
+  
+  # Whether to create time windows for sequential data (true = use windows, false = don't)
+  # IMS MUST use windows to chop long time series into smaller chunks for analysis
+  use_windowing: true
+  
+  # Window settings for time-series data
+  window:
+    # Size of each window in samples (number of data points per window)
+    # Common sizes: 512, 1024, 2048, 4096 (powers of 2 for FFT efficiency)
+    # Larger windows = more context but fewer samples
+    size: 2048
+    # Step size between windows (stride)
+    # 1 = no overlap, < size = overlapping windows
+    # Overlap helps get more samples and better coverage of the signal
+    stride: 1024
+    # Whether to use overlapping windows (true) or non-overlapping (false)
+    # Overlapping windows provide more training samples and smoother transitions
+    overlap: true
+  
+  # Anomaly detection specific settings
+  anomaly_detection:
+    # Use early data (first N files or first N time periods) as "normal/healthy" training data
+    # This represents the healthy bearing state before degradation starts
+    use_early_as_normal: true
+    # Number of early files to use as normal baseline (or percentage if < 1.0)
+    # Set to None to use all data but risk contamination with failure data
+    normal_baseline_files: 20    # Use first 20 files as healthy baseline
+    # Alternatively, use a time threshold (e.g., first X hours)
+    # normal_baseline_time_hours: null  # Uncomment to use time-based baseline
+
+# Data splitting - how to divide the dataset for training and testing
+split:
+  # Method to split the data: by_file = split by entire files (all windows from same file go to same split)
+  # This prevents data leakage where training and test data come from the same time period
+  # Alternative: time_based = split by chronological order (early = train, late = test)
+  method: time_based
+  
+  # Percentage of early data to use for training (learn normal from healthy data)
+  # For IMS, typically use first 60-70% as training (healthy period)
+  train_ratio: 0.60
+  
+  # Percentage to use for validation during training (10% - used to tune hyperparameters)
+  # This comes from the middle period (transition from healthy to degrading)
+  val_ratio: 0.10
+  
+  # Percentage to use for final testing/evaluation (30% - final anomaly detection check)
+  # This comes from the late period (includes failure/end of life)
+  test_ratio: 0.30
+  
+  # IMS doesn't use stratification (no classes to balance)
+  # Instead, we split by time to ensure training = early/healthy, test = late/degrading
+  stratify_by: null
+  
+  # Random seed to ensure reproducible splits (same seed = same split every time you run)
+  # Set to 42 for consistency - change to any number if you want a different split
+  # Note: With time_based split, random_state only affects tie-breaking if needed
+  random_state: 42
+
+# File format - how to parse the data files
+file_format:
+  # Delimiter for separating values (tab-separated)
+  delimiter: "\t"
+  # Whether files have headers (false = no headers, just data)
+  header: false
+  # Columns in order (8 channels, numbered 0-7 in the file)
+  columns_in_order:
+    - ch1
+    - ch2
+    - ch3
+    - ch4
+    - ch5
+    - ch6
+    - ch7
+    - ch8
+  # Timestamp extraction from filename
+  # Filenames are in format: YYYY.MM.DD.HH.MM.SS
+  # Example: 2003.11.24.12.53.55 = November 24, 2003 at 12:53:55
+  extract_timestamp_from_filename: true
+  timestamp_format: "%Y.%m.%d.%H.%M.%S"
+
