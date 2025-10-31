@@ -1,0 +1,95 @@
+# AI4I Dataset Configuration
+# Type: Tabular data (table format with rows and columns)
+# Task: Supervised learning (we have labels/targets to predict)
+dataset_name: ai4i
+
+# File paths - where to find input data and where to save processed outputs
+paths:
+  # Location of the original raw dataset file (the CSV file you downloaded)
+  raw_input_file: data/raw/unzipped-data/ai4i/ai4i.csv
+  # Where to save the cleaned data after removing errors, fixing formatting, etc.
+  clean_output_path: data/clean/ai4i/ai4i_clean.parquet
+  # Where to save the feature-engineered data after adding/transforming features
+  features_output_path: data/features/ai4i/ai4i_features.parquet
+
+# Schema - defines the structure and types of data columns
+schema:
+  # Maps original column names from the CSV file to simpler internal names
+  # This matches exactly what's in your ai4i.csv file
+  column_map:
+    "UDI": udi                    # Unique Device Identifier (row ID)
+    "Product ID": product_id      # Product identification code
+    "Type": type                  # Machine type (category: H, L, or M)
+    "Air temperature [K]": air_temp_k          # Air temperature in Kelvin
+    "Process temperature [K]": proc_temp_k     # Process temperature in Kelvin
+    "Rotational speed [rpm]": rpm              # Rotational speed in revolutions per minute
+    "Torque [Nm]": torque_nm                   # Torque in Newton-meters
+    "Tool wear [min]": tool_wear_min           # Tool wear time in minutes
+    "Machine failure": target                  # Overall machine failure (0=no, 1=yes) - main target
+    "TWF": twf                    # Tool Wear Failure (specific failure type)
+    "HDF": hdf                    # Heat Dissipation Failure (specific failure type)
+    "PWF": pwf                    # Power Failure (specific failure type)
+    "OSF": osf                    # Overstrain Failure (specific failure type)
+    "RNF": rnf                    # Random Failure (specific failure type)
+
+  # What we're trying to predict (the target/outcome variable)
+  # Default: overall Machine failure (0/1 binary prediction)
+  # Alternative: You can predict specific fault types by changing this to:
+  #   - twf (Tool Wear Failure)
+  #   - hdf (Heat Dissipation Failure)
+  #   - pwf (Power Failure)
+  #   - osf (Overstrain Failure)
+  #   - rnf (Random Failure)
+  target_col: target
+
+  # Features to remove before training (so the model doesn't cheat or memorize)
+  # UDI and Product ID are just identifiers - not useful for predictions
+  drop_features: [udi, product_id]
+
+  # Columns that represent categories/groups (not numbers)
+  # Type has values like H, L, M (high, low, medium machine types)
+  categorical_features: [type]
+  
+  # Columns that are numbers (temperature, speed, torque, etc.)
+  # These are the actual measurements we'll use to predict failures
+  numeric_features: [air_temp_k, proc_temp_k, rpm, torque_nm, tool_wear_min]
+
+# Data preparation settings - how to clean and transform the data
+prep:
+  # Remove rows with missing values (true = drop incomplete rows, false = keep them)
+  drop_na: true
+  
+  # How to fill in missing values if any remain (mean = use average value of that column)
+  # This is a backup - drop_na usually removes all missing values first
+  impute: mean
+  
+  # How to normalize/scale numeric features (standard = mean 0, standard deviation 1)
+  # This helps the model train better by putting all numbers on the same scale
+  # StandardScaler is only fitted on training data, then applied to val/test
+  scale: standard
+  
+  # Whether to create time windows for sequential data (false = don't use windows)
+  # This dataset is not time-series, so we don't need sliding windows
+  use_windowing: false
+
+# Data splitting - how to divide the dataset for training and testing
+split:
+  # Method to split the data: random_percent = randomly split by percentages
+  method: random_percent
+  
+  # Percentage of data to use for training the model (70% of all data)
+  train_ratio: 0.70
+  
+  # Percentage to use for validation during training (15% - used to tune hyperparameters)
+  val_ratio: 0.15
+  
+  # Percentage to use for final testing/evaluation (15% - final performance check)
+  test_ratio: 0.15
+  
+  # Keep the same proportion of failures/non-failures across train/val/test splits
+  # This ensures each split has roughly the same class balance (important for imbalanced data)
+  stratify_by: target
+  
+  # Random seed to ensure reproducible splits (same seed = same split every time you run)
+  # Set to 42 for consistency - change to any number if you want a different random split
+  random_state: 42
