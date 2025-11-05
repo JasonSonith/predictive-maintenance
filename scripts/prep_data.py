@@ -28,8 +28,26 @@ console = Console()
 def load_config(config_path: Union[str, pathlib.Path]) -> Dict:
     """Load and parse YAML configuration file."""
     config_path = pathlib.Path(config_path)
+    
+    # If config_path doesn't exist, try common variations
     if not config_path.exists():
-        raise FileNotFoundError(f"Config file not found: {config_path}")
+        # Try with 'configs' directory (common typo: config vs configs)
+        if 'config' in str(config_path) and 'configs' not in str(config_path):
+            alt_path = pathlib.Path(str(config_path).replace('config/', 'configs/').replace('config\\', 'configs\\'))
+            if alt_path.exists():
+                console.print(f"[yellow]Note: Using {alt_path} instead of {config_path}[/yellow]")
+                config_path = alt_path
+            else:
+                raise FileNotFoundError(
+                    f"Config file not found: {config_path}\n"
+                    f"  (Also tried: {alt_path})\n"
+                    f"  Make sure the path is correct (use 'configs/' not 'config/')"
+                )
+        else:
+            raise FileNotFoundError(
+                f"Config file not found: {config_path}\n"
+                f"  Make sure the path is correct"
+            )
     
     with open(config_path, 'r') as f:
         config = yaml.safe_load(f)
@@ -472,7 +490,7 @@ def save_cleaned_data(df: pd.DataFrame, config: Dict) -> None:
     # Save as parquet (efficient, compressed format)
     df.to_parquet(output_path, index=False, engine='pyarrow', compression='snappy')
     
-    console.print(f"[green]✓ Saved {len(df)} rows to {output_path}[/green]")
+    console.print(f"[green]Successfully saved {len(df)} rows to {output_path}[/green]")
 
 
 def main():
@@ -530,7 +548,7 @@ def main():
     console.print(f"  Total rows: {len(df):,}")
     console.print(f"  Total columns: {len(df.columns)}")
     console.print(f"  Output file: {config['paths']['clean_output_path']}")
-    console.print("[bold green]✓ Data preparation complete![/bold green]")
+    console.print("[bold green]Data preparation complete![/bold green]")
 
 
 if __name__ == '__main__':
