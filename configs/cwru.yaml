@@ -9,8 +9,8 @@ paths:
   # normal_baseline: healthy/normal bearing condition files
   # drive_end_12k: fault condition files (ball fault, inner race fault, outer race fault)
   raw_input_dirs:
-    - data/raw/unzipped-data/cwru/normal_baseline
-    - data/raw/unzipped-data/cwru/drive_end_12k
+    - data/raw/cwru/normal_baseline
+    - data/raw/cwru/drive_end_12k
   # Where to save the cleaned data after processing all files
   clean_output_path: data/clean/cwru/cwru_clean.parquet
   # Where to save the feature-engineered data after windowing and feature extraction

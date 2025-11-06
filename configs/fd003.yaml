@@ -11,11 +11,11 @@ dataset_name: cmapss_fd003
 # File paths - where to find input data and where to save processed outputs
 paths:
   # Location of training data (engines run until failure)
-  raw_train_file: data/raw/unzipped-data/cmapss/train_FD003.txt
+  raw_train_file: data/raw/cmapss/train_FD003.txt
   # Location of test data (engines stopped before failure)
-  raw_test_file: data/raw/unzipped-data/cmapss/test_FD003.txt
+  raw_test_file: data/raw/cmapss/test_FD003.txt
   # Location of true RUL values for test set (ground truth for evaluation)
-  raw_rul_file: data/raw/unzipped-data/cmapss/RUL_FD003.txt
+  raw_rul_file: data/raw/cmapss/RUL_FD003.txt
   # Where to save the cleaned data after processing
   clean_output_path: data/clean/cmapss/fd003_clean.parquet
   # Where to save the feature-engineered data after windowing and RUL calculation

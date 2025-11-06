@@ -14,7 +14,7 @@ paths:
   #   - Late files = degrading/failing bearing (testing data)
   #   - Full sequence shows complete degradation pattern
   # Optional: Set max_files to limit for quick testing (e.g., 30 for first few hours)
-  raw_input_dir: data/raw/unzipped-data/ims/1st_test
+  raw_input_dir: data/raw/ims/1st_test
   # Maximum number of files to process (null/empty = use all files)
   # Set to a number (e.g., 30) to limit processing for quick testing
   # Leave as null to use all available files (recommended for full analysis)
