@@ -1,0 +1,192 @@
+# CMAPSS FD001 Dataset Configuration
+# Type: Time-series sensor data (jet engine simulation)
+# Task: Regression - predict Remaining Useful Life (RUL) in cycles
+# Dataset Info:
+#   - Train trajectories: 100 engines
+#   - Test trajectories: 100 engines
+#   - Operating conditions: ONE (Sea Level)
+#   - Fault modes: ONE (HPC Degradation)
+dataset_name: cmapss_fd001
+
+# File paths - where to find input data and where to save processed outputs
+paths:
+  # Location of training data (engines run until failure)
+  raw_train_file: data/raw/cmapss/train_FD001.txt
+  # Location of test data (engines stopped before failure)
+  raw_test_file: data/raw/cmapss/test_FD001.txt
+  # Location of true RUL values for test set (ground truth for evaluation)
+  raw_rul_file: data/raw/cmapss/RUL_FD001.txt
+  # Where to save the cleaned data after processing
+  clean_output_path: data/clean/cmapss/fd001_clean.parquet
+  clean_output_path_csv: data/clean/cmapss/fd001_clean.csv
+  # Where to save the feature-engineered data after windowing and RUL calculation
+  features_output_path: data/features/cmapss/fd001_features.parquet
+  features_output_path_csv: data/features/cmapss/fd001_features.csv
+
+# Schema - defines the structure and types of data columns
+schema:
+  # Maps column positions to internal names (files have no headers)
+  # Files have 26 columns total: unit, cycle, 3 settings, 21 sensors
+  column_map:
+    unit: unit          # Engine unit ID (each engine has unique ID)
+    cycle: cycle        # Time in operational cycles (each row = one cycle)
+    setting1: setting1 # Operational setting 1 (affects engine performance)
+    setting2: setting2  # Operational setting 2 (affects engine performance)
+    setting3: setting3  # Operational setting 3 (affects engine performance)
+    s1: s1              # Sensor measurement 1
+    s2: s2              # Sensor measurement 2
+    s3: s3              # Sensor measurement 3
+    s4: s4              # Sensor measurement 4
+    s5: s5              # Sensor measurement 5
+    s6: s6              # Sensor measurement 6
+    s7: s7              # Sensor measurement 7
+    s8: s8              # Sensor measurement 8
+    s9: s9              # Sensor measurement 9
+    s10: s10            # Sensor measurement 10
+    s11: s11            # Sensor measurement 11
+    s12: s12            # Sensor measurement 12
+    s13: s13            # Sensor measurement 13
+    s14: s14            # Sensor measurement 14
+    s15: s15            # Sensor measurement 15
+    s16: s16            # Sensor measurement 16
+    s17: s17            # Sensor measurement 17
+    s18: s18            # Sensor measurement 18
+    s19: s19            # Sensor measurement 19
+    s20: s20            # Sensor measurement 20
+    s21: s21            # Sensor measurement 21
+  
+  # What we're trying to predict (the target/outcome variable)
+  # RUL = Remaining Useful Life (number of cycles until failure)
+  target_col: rul
+  
+  # Features to remove before training (unit and cycle are metadata, not prediction features)
+  # Unit ID is used for grouping/splitting but not as a feature
+  # Cycle is used to calculate RUL but not directly as a feature
+  drop_features: [unit, cycle]
+  
+  # No categorical features - all are numeric (settings and sensors)
+  categorical_features: []
+  
+  # All numeric features: 3 operational settings + 21 sensor measurements = 24 features
+  numeric_features:
+    - setting1
+    - setting2
+    - setting3
+    - s1
+    - s2
+    - s3
+    - s4
+    - s5
+    - s6
+    - s7
+    - s8
+    - s9
+    - s10
+    - s11
+    - s12
+    - s13
+    - s14
+    - s15
+    - s16
+    - s17
+    - s18
+    - s19
+    - s20
+    - s21
+
+# Data preparation settings - how to clean and transform the data
+prep:
+  # Remove rows with missing values (false = keep them, impute instead)
+  # CMAPSS data may have missing values, so we impute rather than drop
+  drop_na: false
+  
+  # How to fill in missing values (median = use median value of that column)
+  # Median is more robust to outliers than mean for sensor data
+  impute: median
+  
+  # How to normalize/scale numeric features (standard = mean 0, standard deviation 1)
+  # This helps the model train better by putting all features on the same scale
+  # StandardScaler is only fitted on training data, then applied to val/test
+  scale: standard
+  
+  # Whether to create time windows for sequential data (true = use windows, false = don't)
+  # CMAPSS is time-series data, so we MUST use windows to create sequences
+  use_windowing: true
+  
+  # Window settings for time-series data
+  window_params:
+    # Size of each window in cycles (number of time steps per window)
+    # Window size of 30 cycles provides good temporal context
+    window_size: 30
+    # Step size between windows (stride = 1 means sliding window, no skipping)
+    # step_size: 1 = each window overlaps by window_size - 1
+    step_size: 1
+    # Whether to label windows with RUL at end of window (true) or start (false)
+    # label_at_end: true = RUL value at the last cycle of the window
+    label_at_end: true
+    # Maximum RUL value (cap) to prevent very long RUL from dominating training
+    # Engines with RUL > cap_value are treated as having RUL = cap_value
+    cap_rul: 125
+  
+  # RUL derivation settings
+  derive_rul:
+    # Whether to cap RUL values (true = use cap_value as maximum)
+    # Capping prevents early-cycle engines (very high RUL) from dominating training
+    use_cap: true
+    # Maximum RUL value to use (cycles with RUL > this become cap_value)
+    # Common values: 100, 125, 130 (125 is a common choice)
+    cap_value: 125
+
+# Data splitting - how to divide the dataset for training and testing
+split:
+  # Method to split the data: by_unit_holdout = split by entire engines
+  # This prevents data leakage where training and test data come from the same engine
+  # All cycles from a given engine unit go to the same split
+  method: by_unit_holdout
+  
+  # Percentage/ratio of engine units to use for validation (10% = 0.1)
+  # Remaining engines go to training
+  val_units_ratio: 0.1
+  
+  # Random seed to ensure reproducible splits (same seed = same split every time)
+  # Set to 42 for consistency - change to any number if you want a different split
+  random_state: 42
+  
+  # Group by engine unit to ensure all cycles from same engine stay together
+  group_by: unit
+
+# File format - how to parse the data files
+file_format:
+  # Delimiter for separating values (whitespace - spaces or tabs)
+  # CMAPSS files are space-separated
+  delimiter: "\\s+"
+  # Whether files have headers (false = no headers, just data)
+  header: false
+  # Columns in order as they appear in the file (26 columns total)
+  columns_in_order:
+    - unit
+    - cycle
+    - setting1
+    - setting2
+    - setting3
+    - s1
+    - s2
+    - s3
+    - s4
+    - s5
+    - s6
+    - s7
+    - s8
+    - s9
+    - s10
+    - s11
+    - s12
+    - s13
+    - s14
+    - s15
+    - s16
+    - s17
+    - s18
+    - s19
+    - s20
+    - s21
