@@ -21,8 +21,10 @@ paths:
   max_files: null
   # Where to save the cleaned data after processing all files
   clean_output_path: data/clean/ims/ims_clean.parquet
+  clean_output_path_csv: data/clean/ims/ims_clean.csv
   # Where to save the feature-engineered data after windowing and feature extraction
   features_output_path: data/features/ims/ims_features.parquet
+  features_output_path_csv: data/features/ims/ims_features.csv
 
 # Schema - defines the structure and types of data columns
 schema:

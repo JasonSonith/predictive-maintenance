@@ -13,8 +13,10 @@ paths:
     - data/raw/cwru/drive_end_12k
   # Where to save the cleaned data after processing all files
   clean_output_path: data/clean/cwru/cwru_clean.parquet
+  clean_output_path_csv: data/clean/cwru/cwru_clean.csv
   # Where to save the feature-engineered data after windowing and feature extraction
   features_output_path: data/features/cwru/cwru_features.parquet
+  features_output_path_csv: data/features/cwru/cwru_features.csv
 
 # Schema - defines the structure and types of data columns
 schema:

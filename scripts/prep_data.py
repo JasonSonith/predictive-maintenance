@@ -217,12 +217,23 @@ def clean_data(df, config):
     return df
 
 def save_cleaned_data(df, config):
-    output_path = pathlib.Path(config['paths']['clean_output_path'])
-    output_path.parent.mkdir(parents=True, exist_ok=True)
+    paths = config.get('paths', {})
     
-    print(f"Saving to {output_path}...")
-    df.to_parquet(output_path, index=False, engine='pyarrow', compression='snappy')
-    print(f"Saved {len(df)} rows")
+    # Save parquet
+    if 'clean_output_path' in paths:
+        output_path = pathlib.Path(paths['clean_output_path'])
+        output_path.parent.mkdir(parents=True, exist_ok=True)
+        print(f"Saving to {output_path} (Parquet)...")
+        df.to_parquet(output_path, index=False, engine='pyarrow', compression='snappy')
+        print(f"Saved {len(df)} rows to parquet")
+    
+    # Save csv
+    if 'clean_output_path_csv' in paths:
+        csv_path = pathlib.Path(paths['clean_output_path_csv'])
+        csv_path.parent.mkdir(parents=True, exist_ok=True)
+        print(f"Saving to {csv_path} (CSV)...")
+        df.to_csv(csv_path, index=False)
+        print(f"Saved {len(df)} rows to csv")
 
 def main():
     parser = argparse.ArgumentParser()

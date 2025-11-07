@@ -18,8 +18,10 @@ paths:
   raw_rul_file: data/raw/cmapss/RUL_FD002.txt
   # Where to save the cleaned data after processing
   clean_output_path: data/clean/cmapss/fd002_clean.parquet
+  clean_output_path_csv: data/clean/cmapss/fd002_clean.csv
   # Where to save the feature-engineered data after windowing and RUL calculation
   features_output_path: data/features/cmapss/fd002_features.parquet
+  features_output_path_csv: data/features/cmapss/fd002_features.csv
 
 # Schema - defines the structure and types of data columns
 schema:

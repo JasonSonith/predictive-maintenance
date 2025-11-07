@@ -9,8 +9,10 @@ paths:
   raw_input_file: data/raw/ai4i/ai4i.csv
   # Where to save the cleaned data after removing errors, fixing formatting, etc.
   clean_output_path: data/clean/ai4i/ai4i_clean.parquet
+  clean_output_path_csv: data/clean/ai4i/ai4i_clean.csv
   # Where to save the feature-engineered data after adding/transforming features
   features_output_path: data/features/ai4i/ai4i_features.parquet
+  features_output_path_csv: data/features/ai4i/ai4i_features.csv
 
 # Schema - defines the structure and types of data columns
 schema:
