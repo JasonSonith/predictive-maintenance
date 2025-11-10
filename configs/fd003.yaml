@@ -118,9 +118,9 @@ prep:
     # Size of each window in cycles (number of time steps per window)
     # Window size of 30 cycles provides good temporal context
     window_size: 30
-    # Step size between windows (stride = 1 means sliding window, no skipping)
-    # step_size: 1 = each window overlaps by window_size - 1
-    step_size: 1
+    # Step size between windows (stride = 10 means less overlap, faster processing)
+    # step_size: 10 = each window overlaps by 20 cycles
+    step_size: 10
     # Whether to label windows with RUL at end of window (true) or start (false)
     # label_at_end: true = RUL value at the last cycle of the window
     label_at_end: true

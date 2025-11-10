@@ -391,3 +391,5 @@ Always include in pipeline runs:
 5. **Don't skip intermediate inspection**: Always check clean/ outputs before features, features/ before training
 6. **Don't hardcode paths**: Always read from config, use pathlib for cross-platform compatibility
 7. **Don't skip DVC for large files**: Raw data goes in DVC, not Git
+- what ive done so far is created the configs and clean the datasets. Now based off what I have done give me the next steps
+- document what ive done far, making features from the clean datasets

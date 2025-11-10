@@ -1,0 +1,264 @@
+FEATURE EXTRACTION PIPELINE - STAGE 2
+================================================================================
+
+INPUT: Cleaned Data (data/clean/)
+├── ims_clean.parquet         (1.9M rows, 11 cols)
+├── cwru_clean.parquet        (1.2M rows, 8 cols)
+├── ai4i_clean.parquet        (10K rows, 15 cols)
+└── fd001_clean.parquet       (20K rows, 26 cols)
+
+                           │
+                           ▼
+┌──────────────────────────────────────────────────────────────┐
+│  scripts/make_features.py                                    │
+│                                                              │
+│  Step 1: Load Config                                         │
+│    └─ Read configs/<dataset>.yaml                           │
+│    └─ Extract: computed_features, window params             │
+│                                                              │
+│  Step 2: Load Cleaned Data                                  │
+│    └─ Read data/clean/<dataset>/<dataset>_clean.parquet     │
+│    └─ Validate: file exists, columns present                │
+│                                                              │
+│  Step 3: Dataset-Specific Processing                        │
+│                                                              │
+│  ┌─ IMS Dataset ────────────────────────────────┐           │
+│  │ • Group by file_index                        │           │
+│  │ • For each of 8 channels (ch1-ch8):          │           │
+│  │   - Extract signal (20,480 samples)          │           │
+│  │   - Create windows (size=2048, stride=1024)  │           │
+│  │   - Compute features per window              │           │
+│  │ • Preserve: timestamp, file_index            │           │
+│  │ • Output: ~14K feature vectors               │           │
+│  └──────────────────────────────────────────────┘           │
+│                                                              │
+│  ┌─ CWRU Dataset ───────────────────────────────┐           │
+│  │ • Group by source_file                       │           │
+│  │ • Extract vibration_amp signal               │           │
+│  │ • Create windows (size=2048, stride=1024)    │           │
+│  │ • Compute features per window                │           │
+│  │ • Preserve: fault_type, fault_size, load     │           │
+│  │ • Output: ~25K feature vectors               │           │
+│  └──────────────────────────────────────────────┘           │
+│                                                              │
+│  ┌─ AI4I Dataset ───────────────────────────────┐           │
+│  │ • No windowing (tabular data)                │           │
+│  │ • Add derived features:                      │           │
+│  │   - temp_diff = proc_temp - air_temp         │           │
+│  │   - power = torque * rpm                     │           │
+│  │ • Preserve: all columns, targets             │           │
+│  │ • Output: 10K feature vectors (1:1)          │           │
+│  └──────────────────────────────────────────────┘           │
+│                                                              │
+│  ┌─ C-MAPSS Dataset ────────────────────────────┐           │
+│  │ • Group by unit (engine ID)                  │           │
+│  │ • For each of 21 sensors (s1-s21):           │           │
+│  │   - Extract sensor values across cycles      │           │
+│  │   - Create windows (size=30, stride=1)       │           │
+│  │   - Compute features per window              │           │
+│  │ • Preserve: unit, cycle, settings            │           │
+│  │ • Output: ~50K feature vectors               │           │
+│  └──────────────────────────────────────────────┘           │
+│                                                              │
+│  Step 4: Window Creation                                    │
+│    └─ create_windows(signal, window_size, stride)           │
+│    └─ Sliding window with 50% overlap (default)             │
+│                                                              │
+│  Step 5: Feature Computation                                │
+│    └─ compute_time_domain_features(window, features)        │
+│    └─ Features computed:                                    │
+│         • mean:          np.mean(x)                          │
+│         • std:           np.std(x)                           │
+│         • rms:           sqrt(mean(x²))                      │
+│         • min, max:      np.min(x), np.max(x)               │
+│         • peak_to_peak:  max - min                           │
+│         • kurtosis:      scipy.stats.kurtosis(fisher=True)   │
+│         • skewness:      scipy.stats.skew(x)                │
+│         • crest_factor:  max(|x|) / rms                      │
+│                                                              │
+│  Step 6: Validation                                         │
+│    └─ Check for NaN values (fill with 0.0)                  │
+│    └─ Verify numeric dtypes                                 │
+│    └─ Log statistics                                        │
+│                                                              │
+│  Step 7: Save Outputs                                       │
+│    └─ Save to Parquet (compressed, production)              │
+│    └─ Save to CSV (human-readable, inspection)              │
+│    └─ Save metadata JSON (reproducibility)                  │
+│                                                              │
+└──────────────────────────────────────────────────────────────┘
+
+                           │
+                           ▼
+
+OUTPUT: Engineered Features (data/features/)
+├── ims/
+│   ├── ims_features.parquet           (14K rows, 69 cols, 3.5 MB)
+│   ├── ims_features.csv               (14K rows, 69 cols, 8.9 MB)
+│   └── feature_extraction_log.json    (metadata)
+│
+├── cwru/
+│   ├── cwru_features.parquet          (25K rows, 15 cols, 4.2 MB)
+│   ├── cwru_features.csv              (25K rows, 15 cols, 12 MB)
+│   └── feature_extraction_log.json
+│
+├── ai4i/
+│   ├── ai4i_features.parquet          (10K rows, 17 cols, 0.5 MB)
+│   ├── ai4i_features.csv              (10K rows, 17 cols, 1.8 MB)
+│   └── feature_extraction_log.json
+│
+└── fd001/
+    ├── fd001_features.parquet         (50K rows, 30 cols, 6.8 MB)
+    ├── fd001_features.csv             (50K rows, 30 cols, 18 MB)
+    └── feature_extraction_log.json
+
+================================================================================
+
+FEATURE NAMING CONVENTION
+================================================================================
+
+Pattern: {channel}_{feature_name}
+
+Examples:
+  IMS:     ch1_rms, ch2_kurtosis, ch3_peak_to_peak
+  CWRU:    vibration_rms, vibration_kurtosis
+  AI4I:    temp_diff, power (derived features)
+  C-MAPSS: s1_mean, s2_std, s3_rms
+
+Preserved Metadata:
+  IMS:     timestamp, file_index, source_file, window_id
+  CWRU:    fault_type, fault_size_mils, load_hp, sensor_location, window_id
+  AI4I:    type, target, twf, hdf, pwf, osf, rnf
+  C-MAPSS: unit, cycle, split, setting1-3, window_id
+
+================================================================================
+
+WINDOWING EXAMPLE (IMS)
+================================================================================
+
+Raw Signal (per file per channel):
+  Length: 20,480 samples
+
+Window Parameters:
+  Size:   2,048 samples
+  Stride: 1,024 samples (50% overlap)
+
+Window Creation:
+  Window 0: samples [0:2048]
+  Window 1: samples [1024:3072]     ← 1024 overlap with Window 0
+  Window 2: samples [2048:4096]     ← 1024 overlap with Window 1
+  ...
+  Window 18: samples [18432:20480]
+
+Total Windows per Channel per File: 19
+Total Feature Vectors per File: 19 windows × 8 channels = 152
+Total Feature Vectors (96 files): 152 × 96 = 14,592
+
+================================================================================
+
+FEATURE COMPUTATION EXAMPLE
+================================================================================
+
+Input Window: [0.1, 0.2, -0.1, 0.3, 0.15, -0.05, ...] (2048 samples)
+
+Computed Features:
+  mean:          0.05     (average amplitude)
+  std:           0.12     (variability)
+  rms:           0.13     (energy = sqrt(mean(x²)))
+  min:          -0.15     (lowest value)
+  max:           0.35     (highest value)
+  peak_to_peak:  0.50     (0.35 - (-0.15))
+  kurtosis:      2.8      (tail heaviness, excess kurtosis)
+  skewness:      0.2      (slight right skew)
+  crest_factor:  2.7      (max / rms = 0.35 / 0.13)
+
+Output Row (simplified):
+  timestamp, file_index, window_id, sensor, ch1_mean, ch1_std, ch1_rms, ...
+
+================================================================================
+
+MEMORY EFFICIENCY STRATEGY
+================================================================================
+
+Challenge: Process 2M+ rows on 2-4 GB RAM laptop
+
+Solutions:
+  1. File-by-file processing
+     └─ Group by file_index, process one at a time
+     └─ Never load entire dataset into memory
+
+  2. Generator-based windowing
+     └─ create_windows() returns list (not generator in current version)
+     └─ Could optimize further with yield
+
+  3. Parquet columnar format
+     └─ Read only needed columns
+     └─ Efficient compression (snappy)
+
+  4. Chunked feature computation
+     └─ Compute features per window immediately
+     └─ Append to list, free window memory
+
+  5. Efficient numpy operations
+     └─ Vectorized computations (avoid loops)
+     └─ In-place operations where possible
+
+Peak Memory Usage:
+  IMS (96 files):   ~800 MB
+  CWRU:             ~800 MB
+  AI4I:             ~50 MB
+  FD001:            ~600 MB
+
+All well under 2 GB constraint!
+
+================================================================================
+
+CONFIGURATION CUSTOMIZATION
+================================================================================
+
+Edit configs/<dataset>.yaml to customize:
+
+# Change features computed
+schema:
+  computed_features:
+    - rms                # Remove any you don't need
+    - kurtosis
+    # Add others: mean, std, skewness, peak_to_peak, crest_factor, min, max
+
+# Adjust window size
+prep:
+  window:
+    size: 4096          # Larger = more context, fewer samples
+    stride: 2048        # Larger = less overlap, faster processing
+
+# Disable windowing (for tabular data)
+prep:
+  use_windowing: false
+
+No code changes required!
+
+================================================================================
+
+NEXT STEPS
+================================================================================
+
+After feature extraction, proceed to Stage 3: Model Training
+
+Command:
+  python scripts/train.py --config configs/models/isolation_forest.yaml
+
+The training script will:
+  1. Load features from data/features/
+  2. Train anomaly detection model
+  3. Save model to results/models/
+  4. Generate performance metrics
+
+Full Pipeline Sequence:
+  Stage 1: python scripts/prep_data.py --config configs/ims.yaml
+  Stage 2: python scripts/make_features.py --config configs/ims.yaml ← YOU ARE HERE
+  Stage 3: python scripts/train.py --config configs/models/isolation_forest.yaml
+  Stage 4: python scripts/threshold.py --target_far 0.1/week
+  Stage 5: python scripts/evaluate.py --report artifacts/reports/ims_iforest/
+  Stage 6: python scripts/score_batch.py --config configs/ims.yaml --model ...
+
+================================================================================

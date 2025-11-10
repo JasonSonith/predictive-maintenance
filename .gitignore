@@ -1,0 +1,76 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+pip-wheel-metadata/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Virtual environments
+.venv/
+venv/
+ENV/
+env/
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Jupyter
+.ipynb_checkpoints/
+*.ipynb
+
+# Data directories (ignore uncompressed data, keep compressed archives)
+data/features/**/*.csv
+data/features/**/*.parquet
+data/clean/
+data/raw/
+
+# Keep compressed archives
+!data/features.zip
+!data/features/features.zip
+
+# Model artifacts
+artifacts/
+results/
+*.joblib
+*.pkl
+*.h5
+*.pt
+*.pth
+
+# Logs
+*.log
+logs/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# DVC
+.dvc/cache/
+.dvc/tmp/
+
+# Temporary files
+*.tmp
+*.bak
