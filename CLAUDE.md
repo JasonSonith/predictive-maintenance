@@ -312,9 +312,9 @@ random_state: 42
 - Complete configuration system (7 dataset configs)
 - DVC setup for data versioning
 - IMS data fully cleaned (ims_clean.parquet, ims_clean.csv)
+- Feature engineering (make_features.py) for all 4 datasets
 
 **PLANNED:**
-- scripts/make_features.py (Stage 2)
 - scripts/train.py (Stage 3)
 - scripts/threshold.py (Stage 4)
 - scripts/evaluate.py (Stage 5)
@@ -391,5 +391,12 @@ Always include in pipeline runs:
 5. **Don't skip intermediate inspection**: Always check clean/ outputs before features, features/ before training
 6. **Don't hardcode paths**: Always read from config, use pathlib for cross-platform compatibility
 7. **Don't skip DVC for large files**: Raw data goes in DVC, not Git
-- what ive done so far is created the configs and clean the datasets. Now based off what I have done give me the next steps
-- document what ive done far, making features from the clean datasets
+## Current Status
+
+**Completed Stages:**
+1. ✅ Stage 1: Data Preparation (prep_data.py) - All datasets cleaned
+2. ✅ Stage 2: Feature Engineering (make_features.py) - Script implemented and features extracted
+
+**Next Steps:**
+- Implement Stage 3: Training (train.py) - Train anomaly detection models
+- Create model configuration YAMLs (configs/models/*.yaml) if not already done

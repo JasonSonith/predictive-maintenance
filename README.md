@@ -30,16 +30,41 @@ predictive-maintenance/
 ```
 
 ## Install
-```
-python -m venv .venv
-src .venv/bin/activate        # Windows: .venv\Scripts\activate
+
+### Requirements
+- Python 3.11.9 (recommended)
+- All dependencies in `requirements.txt`
+
+### Setup Virtual Environment
+The virtual environment is installed locally in the project folder (`.venv/`), making it accessible to anyone who clones the repo.
+
+```bash
+# Create venv with Python 3.11.9
+python3.11 -m venv .venv
+
+# Or if using pyenv:
+# ~/.pyenv/versions/3.11.9/bin/python3 -m venv .venv
+
+# Activate venv
+source .venv/bin/activate        # WSL/Linux/Mac
+# Windows Command Prompt: .venv\Scripts\activate.bat
+# Windows PowerShell: .venv\Scripts\Activate.ps1
+
+# Upgrade pip and install dependencies
 pip install -U pip
 pip install -r requirements.txt
 ```
-`requirements.txt`:
-`numpy pandas scikit-learn scipy pyarrow matplotlib plotly shap joblib pyyaml rich streamlit`
 
-(Torch optional for the autoencoder.)
+### Included Packages
+`numpy pandas scikit-learn scipy pyarrow matplotlib plotly shap joblib pyyaml rich tqdm streamlit pytest`
+
+(PyTorch optional for autoencoder - uncomment in requirements.txt if needed)
+
+### Verify Installation
+```bash
+python --version  # Should show Python 3.11.9
+python -c "import pandas, numpy, sklearn; print('✓ All core packages installed')"
+```
 
 ## Quick start (IMS example)
 1) Place files under `data/raw/ims/`. See `docs/datasets.md`.
