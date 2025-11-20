@@ -32,18 +32,18 @@ predictive-maintenance/
 ## Install
 
 ### Requirements
-- Python 3.11.9 (recommended)
+- Python 3.12.3 (recommended)
 - All dependencies in `requirements.txt`
 
 ### Setup Virtual Environment
 The virtual environment is installed locally in the project folder (`.venv/`), making it accessible to anyone who clones the repo.
 
 ```bash
-# Create venv with Python 3.11.9
-python3.11 -m venv .venv
+# Create venv with Python 3.12.3
+python3 -m venv .venv
 
 # Or if using pyenv:
-# ~/.pyenv/versions/3.11.9/bin/python3 -m venv .venv
+# ~/.pyenv/versions/3.12.3/bin/python3 -m venv .venv
 
 # Activate venv
 source .venv/bin/activate        # WSL/Linux/Mac
@@ -62,7 +62,7 @@ pip install -r requirements.txt
 
 ### Verify Installation
 ```bash
-python --version  # Should show Python 3.11.9
+python --version  # Should show Python 3.12.3
 python -c "import pandas, numpy, sklearn; print('✓ All core packages installed')"
 ```
 
