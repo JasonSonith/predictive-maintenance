@@ -1,28 +1,29 @@
-# core
-numpy
-pandas
-scikit-learn
-scipy
-pyarrow
+# Core ML and data processing
+numpy>=1.24.0,<2.0.0
+pandas>=2.0.0,<3.0.0
+scikit-learn>=1.3.0,<2.0.0
+scipy>=1.11.0,<2.0.0
+pyarrow>=12.0.0,<16.0.0
 
-# viz + reports
-matplotlib
-plotly
-rich
-tqdm
+# Visualization and reports
+matplotlib>=3.7.0,<4.0.0
+plotly>=5.14.0,<6.0.0
+rich>=13.0.0,<14.0.0
+tqdm>=4.65.0,<5.0.0
 
-# explainability
-shap
-joblib
+# Model persistence and explainability
+joblib>=1.3.0,<2.0.0
+shap>=0.42.0,<1.0.0
 
-# config
-PyYAML
+# Configuration
+PyYAML>=6.0,<7.0
 
-# optional dashboard
-streamlit
+# Optional dashboard
+streamlit>=1.28.0,<2.0.0
 
-# tests
-pytest
+# Testing
+pytest>=7.4.0,<9.0.0
 
-# optional deep models (uncomment if needed)
-# torch
+# Optional deep learning (uncomment if needed for autoencoder)
+# torch>=2.0.0,<3.0.0
+# torchvision>=0.15.0,<1.0.0

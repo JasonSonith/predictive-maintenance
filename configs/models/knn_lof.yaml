@@ -1,0 +1,49 @@
+# k-Nearest Neighbors - Local Outlier Factor Model Configuration
+# Detects anomalies based on local density deviation from neighbors
+# Good for detecting local anomalies in clustered data
+
+model_name: ims_knn_lof
+model_type: knn_lof
+dataset_config: configs/ims.yaml
+
+hyperparameters:
+  # Number of neighbors to use
+  # Higher values = more global view, lower values = more local
+  n_neighbors: 20
+
+  # Expected proportion of anomalies in the dataset
+  # Used for decision threshold
+  contamination: 0.1
+
+  # Algorithm used to compute nearest neighbors
+  # Options: auto, ball_tree, kd_tree, brute
+  algorithm: auto
+
+  # Leaf size for tree algorithms (ball_tree, kd_tree)
+  leaf_size: 30
+
+  # Distance metric
+  # Options: euclidean, manhattan, minkowski, chebyshev
+  metric: minkowski
+
+  # Parameter for the Minkowski metric (p=2 is Euclidean)
+  p: 2
+
+  # novelty=True allows prediction on new data (not used for training)
+  novelty: true
+
+# Feature scaling method
+# Standard scaling recommended for distance-based methods
+scaler: standard
+
+# Features to use for training
+features: all
+
+# Random seed for reproducibility
+random_state: 42
+
+# Output paths
+paths:
+  model_output: artifacts/models/ims_knn_lof.joblib
+  scaler_output: artifacts/models/ims_knn_lof_scaler.joblib
+  report_dir: artifacts/reports/ims_knn_lof/

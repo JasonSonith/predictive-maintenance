@@ -1,0 +1,73 @@
+# Autoencoder Model Configuration (Optional - Requires PyTorch)
+# Neural network-based anomaly detection using reconstruction error
+# Learns to compress and reconstruct normal data patterns
+
+model_name: ims_autoencoder
+model_type: autoencoder
+dataset_config: configs/ims.yaml
+
+hyperparameters:
+  # Network architecture
+  # encoder_dims: list of hidden layer sizes (input to bottleneck)
+  # decoder mirrors encoder (bottleneck to output)
+  encoder_dims: [64, 32, 16]
+  bottleneck_dim: 8
+
+  # Training parameters
+  epochs: 50
+  batch_size: 32
+  learning_rate: 0.001
+
+  # Dropout rate for regularization (0.0 to 0.5)
+  dropout: 0.2
+
+  # Weight decay for L2 regularization
+  weight_decay: 0.0001
+
+  # Early stopping patience (epochs without improvement)
+  early_stopping_patience: 10
+
+  # Validation split from training data
+  validation_split: 0.1
+
+  # Activation functions
+  # Options: relu, tanh, sigmoid, leaky_relu
+  activation: relu
+
+  # Loss function
+  # Options: mse (mean squared error), mae (mean absolute error)
+  loss: mse
+
+  # Optimizer
+  # Options: adam, sgd, rmsprop
+  optimizer: adam
+
+  # Contamination threshold (percentile of reconstruction error)
+  # Used to determine anomaly threshold
+  contamination: 0.1
+
+# Feature scaling method
+# Minmax (0-1) or standard scaling recommended for neural networks
+scaler: minmax
+
+# Features to use for training
+features: all
+
+# Random seed for reproducibility
+random_state: 42
+
+# Compute device
+# Options: cpu, cuda (if GPU available)
+device: cpu
+
+# Output paths
+paths:
+  model_output: artifacts/models/ims_autoencoder.pth
+  scaler_output: artifacts/models/ims_autoencoder_scaler.joblib
+  report_dir: artifacts/reports/ims_autoencoder/
+
+# Training history tracking
+logging:
+  save_training_history: true
+  plot_loss_curve: true
+  save_reconstruction_samples: true

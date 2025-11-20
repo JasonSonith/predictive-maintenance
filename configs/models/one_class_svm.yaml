@@ -1,0 +1,56 @@
+# One-Class SVM Model Configuration
+# Boundary-based anomaly detection using Support Vector Machines
+# Learns a decision boundary around normal data
+
+model_name: ims_ocsvm
+model_type: one_class_svm
+dataset_config: configs/ims.yaml
+
+hyperparameters:
+  # Kernel type
+  # Options: linear, poly, rbf, sigmoid
+  # rbf (Radial Basis Function) is most common for anomaly detection
+  kernel: rbf
+
+  # Upper bound on the fraction of training errors and lower bound on support vectors
+  # Should be approximately equal to contamination
+  # Range: (0, 1], typically 0.01 to 0.2
+  nu: 0.1
+
+  # Kernel coefficient for rbf, poly, sigmoid
+  # Options: scale (1 / (n_features * X.var())), auto (1 / n_features), or float
+  gamma: scale
+
+  # Degree of the polynomial kernel (ignored by other kernels)
+  degree: 3
+
+  # Independent term in kernel function (for poly and sigmoid)
+  coef0: 0.0
+
+  # Tolerance for stopping criterion
+  tol: 0.001
+
+  # Whether to use shrinking heuristic
+  shrinking: true
+
+  # Cache size in MB
+  cache_size: 200
+
+  # Maximum number of iterations (-1 for no limit)
+  max_iter: -1
+
+# Feature scaling method
+# Standard or minmax scaling strongly recommended for SVM
+scaler: standard
+
+# Features to use for training
+features: all
+
+# Random seed for reproducibility
+random_state: 42
+
+# Output paths
+paths:
+  model_output: artifacts/models/ims_ocsvm.joblib
+  scaler_output: artifacts/models/ims_ocsvm_scaler.joblib
+  report_dir: artifacts/reports/ims_ocsvm/

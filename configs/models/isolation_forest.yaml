@@ -1,0 +1,43 @@
+# Isolation Forest Model Configuration
+# Fast, works well for high-dimensional data
+# Uses ensemble of isolation trees to detect anomalies
+
+model_name: ims_iforest
+model_type: isolation_forest
+dataset_config: configs/ims.yaml
+
+hyperparameters:
+  # Number of trees in the forest
+  n_estimators: 100
+
+  # Expected proportion of anomalies in the dataset
+  # Used for decision threshold (not for training)
+  contamination: 0.1
+
+  # Number of features to draw from X to train each base estimator
+  # 1.0 = use all features
+  max_features: 1.0
+
+  # If True, individual trees are fit on random subsets with replacement
+  bootstrap: false
+
+  # Controls tree depth (default: average path length)
+  max_samples: auto
+
+# Feature scaling method
+# Options: standard (zero mean, unit variance), minmax (0-1), robust (median-based), none
+scaler: standard
+
+# Features to use for training
+# Options: 'all' or list of feature names
+# If 'all', uses all numeric features from the dataset
+features: all
+
+# Random seed for reproducibility
+random_state: 42
+
+# Output paths
+paths:
+  model_output: artifacts/models/ims_iforest.joblib
+  scaler_output: artifacts/models/ims_iforest_scaler.joblib
+  report_dir: artifacts/reports/ims_iforest/

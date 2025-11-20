@@ -1,7 +1,3 @@
-"""
-Data Preparation Script
-"""
-
 import argparse
 import pathlib
 import re
