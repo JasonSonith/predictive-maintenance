@@ -1,11 +1,4 @@
 #!/usr/bin/env python3
-"""
-Feature Engineering Script - Stage 2
-
-Computes time-domain features from rolling windows.
-Usage: python scripts/make_features.py --config configs/ims.yaml
-"""
-
 import argparse
 import warnings
 import numpy as np
@@ -258,8 +251,6 @@ def main():
         features_df = extract_ai4i_features(df, config)
     elif 'raw_train_file' in paths or 'raw_test_file' in paths:
         features_df = extract_cmapss_features(df, config)
-    else:
-        raise ValueError("Unknown dataset type")
 
     # Fill any NaN values
     if features_df.isnull().sum().sum() > 0:
