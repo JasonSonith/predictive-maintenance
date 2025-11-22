@@ -7,6 +7,7 @@ from pathlib import Path
 
 import joblib
 import numpy as np
+from numpy._typing import _128Bit
 import pandas as pd
 import yaml
 from sklearn.ensemble import IsolationForest
@@ -14,6 +15,312 @@ from sklearn.neighbors import LocalOutlierFactor
 from sklearn.preprocessing import StandardScaler, MinMaxScaler, RobustScaler
 from sklearn.svm import OneClassSVM
 warnings.filterwarnings('ignore', category=FutureWarning)
+
+# PyTorch imports (optional - only needed for AutoEncoder)
+try:
+    import torch
+    import torch.nn as nn
+    import torch.optim as optim
+    from torch.utils.data import TensorDataset, DataLoader
+    PYTORCH_AVAILABLE = True
+except ImportError:
+    PYTORCH_AVAILABLE = False
+    torch = None
+    nn = None
+
+
+class AutoEncoder:
+    """
+    PyTorch-based Autoencoder for anomaly detection.
+
+    Uses reconstruction error to detect anomalies:
+    - Normal data: Low reconstruction error (model learned the pattern)
+    - Anomalous data: High reconstruction error (model can't reconstruct it well)
+
+    Implements sklearn-like API: fit(), predict(), score_samples()
+    """
+
+    def __init__(self, encoder_dims=[64, 32, 16], bottleneck_dim=8,
+                 epochs=50, batch_size=32, learning_rate=0.001,
+                 dropout=0.2, weight_decay=0.0001,
+                 early_stopping_patience=10, validation_split=0.1,
+                 contamination=0.1, activation='relu', loss='mse',
+                 optimizer='adam', device='cpu', random_state=42):
+        """
+        Args:
+            encoder_dims: List of hidden layer sizes for encoder
+            bottleneck_dim: Size of compressed representation
+            epochs: Maximum training epochs
+            batch_size: Batch size for training
+            learning_rate: Learning rate for optimizer
+            dropout: Dropout rate for regularization
+            weight_decay: L2 regularization strength
+            early_stopping_patience: Stop if no improvement for N epochs
+            validation_split: Fraction of data for validation
+            contamination: Expected proportion of anomalies (for threshold)
+            activation: Activation function ('relu', 'tanh', 'sigmoid', 'leaky_relu')
+            loss: Loss function ('mse', 'mae')
+            optimizer: Optimizer ('adam', 'sgd', 'rmsprop')
+            device: 'cpu' or 'cuda'
+            random_state: Random seed
+        """
+        if not PYTORCH_AVAILABLE:
+            raise ImportError("PyTorch is required for AutoEncoder. Install with: pip install torch")
+
+        self.encoder_dims = encoder_dims
+        self.bottleneck_dim = bottleneck_dim
+        self.epochs = epochs
+        self.batch_size = batch_size
+        self.learning_rate = learning_rate
+        self.dropout = dropout
+        self.weight_decay = weight_decay
+        self.early_stopping_patience = early_stopping_patience
+        self.validation_split = validation_split
+        self.contamination = contamination
+        self.activation = activation
+        self.loss_fn_name = loss
+        self.optimizer_name = optimizer
+        self.device = device
+        self.random_state = random_state
+
+        # Set random seeds
+        torch.manual_seed(random_state)
+        np.random.seed(random_state)
+
+        # These will be set during fit()
+        self.model = None
+        self.threshold = None
+        self.training_history = {'train_loss': [], 'val_loss': []}
+        self.input_dim = None
+
+    def _build_model(self, input_dim):
+        """Build the encoder-decoder network"""
+        layers = []
+
+        # Encoder
+        prev_dim = input_dim
+        for hidden_dim in self.encoder_dims:
+            layers.append(nn.Linear(prev_dim, hidden_dim))
+            layers.append(self._get_activation())
+            layers.append(nn.Dropout(self.dropout))
+            prev_dim = hidden_dim
+
+        # Bottleneck
+        layers.append(nn.Linear(prev_dim, self.bottleneck_dim))
+        layers.append(self._get_activation())
+
+        # Decoder (mirror of encoder)
+        decoder_dims = list(reversed(self.encoder_dims))
+        prev_dim = self.bottleneck_dim
+        for hidden_dim in decoder_dims:
+            layers.append(nn.Linear(prev_dim, hidden_dim))
+            layers.append(self._get_activation())
+            layers.append(nn.Dropout(self.dropout))
+            prev_dim = hidden_dim
+
+        # Output layer (no activation - we want raw reconstruction)
+        layers.append(nn.Linear(prev_dim, input_dim))
+
+        return nn.Sequential(*layers)
+
+    def _get_activation(self):
+        """Get activation function"""
+        if self.activation == 'relu':
+            return nn.ReLU()
+        elif self.activation == 'tanh':
+            return nn.Tanh()
+        elif self.activation == 'sigmoid':
+            return nn.Sigmoid()
+        elif self.activation == 'leaky_relu':
+            return nn.LeakyReLU()
+        else:
+            raise ValueError(f"Unknown activation: {self.activation}")
+
+    def _get_loss_fn(self):
+        """Get loss function"""
+        if self.loss_fn_name == 'mse':
+            return nn.MSELoss()
+        elif self.loss_fn_name == 'mae':
+            return nn.L1Loss()
+        else:
+            raise ValueError(f"Unknown loss: {self.loss_fn_name}")
+
+    def _get_optimizer(self):
+        """Get optimizer"""
+        if self.optimizer_name == 'adam':
+            return optim.Adam(self.model.parameters(),
+                            lr=self.learning_rate,
+                            weight_decay=self.weight_decay)
+        elif self.optimizer_name == 'sgd':
+            return optim.SGD(self.model.parameters(),
+                           lr=self.learning_rate,
+                           weight_decay=self.weight_decay)
+        elif self.optimizer_name == 'rmsprop':
+            return optim.RMSprop(self.model.parameters(),
+                               lr=self.learning_rate,
+                               weight_decay=self.weight_decay)
+        else:
+            raise ValueError(f"Unknown optimizer: {self.optimizer_name}")
+
+    def fit(self, X):
+        """
+        Train the autoencoder on normal data.
+
+        Args:
+            X: Training data (numpy array, shape [n_samples, n_features])
+        """
+        X = np.array(X, dtype=np.float32)
+        n_samples, self.input_dim = X.shape
+
+        # Split into train and validation
+        n_val = int(n_samples * self.validation_split)
+        indices = np.random.permutation(n_samples)
+        val_indices = indices[:n_val]
+        train_indices = indices[n_val:]
+
+        X_train = X[train_indices]
+        X_val = X[val_indices]
+
+        print(f"\nTraining samples: {len(X_train)}, Validation samples: {len(X_val)}")
+        print(f"Using device: {self.device}")
+
+        # Build model
+        self.model = self._build_model(self.input_dim)
+        self.model.to(self.device)
+
+        print(f"\nTraining autoencoder...")
+        print("Model architecture:")
+        print(self.model)
+
+        # Setup training
+        criterion = self._get_loss_fn()
+        optimizer = self._get_optimizer()
+
+        # Create data loaders
+        train_dataset = TensorDataset(
+            torch.FloatTensor(X_train),
+            torch.FloatTensor(X_train)  # Target is same as input
+        )
+        train_loader = DataLoader(train_dataset, batch_size=self.batch_size, shuffle=True)
+
+        val_dataset = TensorDataset(
+            torch.FloatTensor(X_val),
+            torch.FloatTensor(X_val)
+        )
+        val_loader = DataLoader(val_dataset, batch_size=self.batch_size, shuffle=False)
+
+        # Training loop
+        best_val_loss = float('inf')
+        patience_counter = 0
+
+        print(f"\nTraining for up to {self.epochs} epochs (early stopping patience: {self.early_stopping_patience})...")
+
+        for epoch in range(self.epochs):
+            # Training phase
+            self.model.train()
+            train_loss = 0.0
+            for batch_X, batch_y in train_loader:
+                batch_X = batch_X.to(self.device)
+                batch_y = batch_y.to(self.device)
+
+                # Forward pass
+                optimizer.zero_grad()
+                outputs = self.model(batch_X)
+                loss = criterion(outputs, batch_y)
+
+                # Backward pass
+                loss.backward()
+                optimizer.step()
+
+                train_loss += loss.item() * len(batch_X)
+
+            train_loss /= len(X_train)
+
+            # Validation phase
+            self.model.eval()
+            val_loss = 0.0
+            with torch.no_grad():
+                for batch_X, batch_y in val_loader:
+                    batch_X = batch_X.to(self.device)
+                    batch_y = batch_y.to(self.device)
+                    outputs = self.model(batch_X)
+                    loss = criterion(outputs, batch_y)
+                    val_loss += loss.item() * len(batch_X)
+
+            val_loss /= len(X_val)
+
+            # Store history
+            self.training_history['train_loss'].append(train_loss)
+            self.training_history['val_loss'].append(val_loss)
+
+            # Print progress every 5 epochs
+            if (epoch + 1) % 5 == 0 or epoch == 0:
+                print(f"Epoch {epoch+1}/{self.epochs} - Train Loss: {train_loss:.6f}, Val Loss: {val_loss:.6f}")
+
+            # Early stopping
+            if val_loss < best_val_loss:
+                best_val_loss = val_loss
+                patience_counter = 0
+                # Save best model
+                self.best_model_state = self.model.state_dict()
+            else:
+                patience_counter += 1
+                if patience_counter >= self.early_stopping_patience:
+                    print(f"Early stopping at epoch {epoch+1} (no improvement for {self.early_stopping_patience} epochs)")
+                    break
+
+        # Load best model
+        self.model.load_state_dict(self.best_model_state)
+        print(f"\nTraining complete! Best validation loss: {best_val_loss:.6f}")
+
+        # Set anomaly threshold based on training data reconstruction errors
+        reconstruction_errors = self._compute_reconstruction_errors(X)
+        threshold_percentile = 100 * (1 - self.contamination)
+        self.threshold = np.percentile(reconstruction_errors, threshold_percentile)
+
+        print(f"\nAnomaly threshold set at: {self.threshold:.6f} (contamination: {self.contamination})")
+
+        return self
+
+    def _compute_reconstruction_errors(self, X):
+        """Compute reconstruction error for each sample"""
+        self.model.eval()
+        X_tensor = torch.FloatTensor(X).to(self.device)
+
+        with torch.no_grad():
+            reconstructed = self.model(X_tensor)
+            errors = torch.mean((X_tensor - reconstructed) ** 2, dim=1)
+
+        return errors.cpu().numpy()
+
+    def score_samples(self, X):
+        """
+        Compute anomaly scores (negative reconstruction errors).
+
+        Lower (more negative) scores = more anomalous
+        This matches sklearn convention.
+
+        Args:
+            X: Data to score (numpy array)
+
+        Returns:
+            scores: Anomaly scores (numpy array)
+        """
+        errors = self._compute_reconstruction_errors(X)
+        # Return negative errors to match sklearn convention (lower = more anomalous)
+        return -errors
+
+    def predict(self, X):
+        """
+        Predict anomaly labels.
+
+        Returns:
+            labels: 1 for normal, -1 for anomaly
+        """
+        errors = self._compute_reconstruction_errors(X)
+        predictions = np.where(errors > self.threshold, -1, 1)
+        return predictions
+
 
 #Base class for loading data, preparing, evaluating, and saving
 class ModelTrainer:
@@ -98,12 +405,6 @@ class ModelTrainer:
         return df
 
     def select_features(self, df):
-        """
-        Step 3: Pick which columns are features (vs metadata like timestamps).
-
-        We don't want to train on things like 'timestamp' or 'file_index'.
-        Only use numeric features like 'mean', 'std', 'rms', etc.
-        """
         # These are metadata, not features
         metadata_cols = ['timestamp', 'file_index', 'source_file', 'window_id', 'sensor',
                          'split', 'unit', 'cycle', 'fault_type', 'fault_size_mils',
@@ -164,7 +465,6 @@ class ModelTrainer:
         return X_train
 
     def _get_scaler(self, scaler_type):
-        """Helper: Create a scaler based on the config"""
         if scaler_type == 'standard':
             return StandardScaler()
         elif scaler_type == 'minmax':
@@ -177,19 +477,9 @@ class ModelTrainer:
             raise ValueError(f"Unknown scaler type: {scaler_type}")
 
     def _create_model(self):
-        """
-        THIS IS THE KEY METHOD!
-
-        This is left blank here - each specific model class fills this in.
-        For example, IsolationForestTrainer says "create an IsolationForest".
-        """
         raise NotImplementedError("Subclass must implement _create_model()")
 
     def train(self):
-        """
-        Step 5: The main training process.
-        This orchestrates everything: prepare data, create model, train, evaluate, save.
-        """
         # Prepare data
         X_train = self.prepare_data()
 
@@ -239,6 +529,10 @@ class ModelTrainer:
         print(f"  Score range: [{scores.min():.4f}, {scores.max():.4f}]")
         print(f"  Score mean: {scores.mean():.4f}, std: {scores.std():.4f}")
 
+        # Print threshold for AutoEncoder
+        if isinstance(self.model, AutoEncoder):
+            print(f"  Reconstruction error threshold: {self.model.threshold:.6f}")
+
         return {
             'n_normal': int(n_normal),
             'n_anomaly': int(n_anomaly),
@@ -260,9 +554,23 @@ class ModelTrainer:
         report_dir = Path(self.model_config['paths']['report_dir'])
         report_dir.mkdir(parents=True, exist_ok=True)
 
-        # Save model
+        # Save model (PyTorch models use .pth, sklearn models use .joblib)
         print(f"\nSaving model: {model_path}")
-        joblib.dump(self.model, model_path)
+        if isinstance(self.model, AutoEncoder):
+            # Save PyTorch model
+            torch.save({
+                'model_state_dict': self.model.model.state_dict(),
+                'threshold': self.model.threshold,
+                'input_dim': self.model.input_dim,
+                'encoder_dims': self.model.encoder_dims,
+                'bottleneck_dim': self.model.bottleneck_dim,
+                'activation': self.model.activation,
+                'dropout': self.model.dropout,
+                'training_history': self.model.training_history
+            }, model_path)
+        else:
+            # Save sklearn model
+            joblib.dump(self.model, model_path)
 
         # Save scaler if present
         if self.scaler is not None:
@@ -293,6 +601,10 @@ class ModelTrainer:
             'random_state': self.model_config.get('random_state', 42)
         }
 
+        # Add training history for AutoEncoder
+        if isinstance(self.model, AutoEncoder):
+            run_metadata['training_history'] = self.model.training_history
+
         # Save run metadata
         run_json_path = report_dir / 'run.json'
         print(f"Saving run metadata: {run_json_path}")
@@ -311,18 +623,7 @@ class ModelTrainer:
         print(f"Report dir: {report_dir}")
         print("="*60)
 
-
-# ============================================================================
-# MODEL-SPECIFIC CLASSES
-# These are the "toppings" for each cookie type
-# Each one just says "here's my model" - everything else is inherited
-# ============================================================================
-
 class IsolationForestTrainer(ModelTrainer):
-    """
-    Trainer for Isolation Forest model.
-    Only needs to define how to create the model - that's it!
-    """
     def _create_model(self):
         return IsolationForest(
             n_estimators=self.hyperparams.get('n_estimators', 100),
@@ -337,10 +638,6 @@ class IsolationForestTrainer(ModelTrainer):
 
 
 class KNNLOFTrainer(ModelTrainer):
-    """
-    Trainer for k-Nearest Neighbors Local Outlier Factor model.
-    Again, just defines the model creation - everything else is inherited!
-    """
     def _create_model(self):
         return LocalOutlierFactor(
             n_neighbors=self.hyperparams.get('n_neighbors', 20),
@@ -355,10 +652,6 @@ class KNNLOFTrainer(ModelTrainer):
 
 
 class OneClassSVMTrainer(ModelTrainer):
-    """
-    Trainer for One-Class SVM model.
-    Same pattern - just the model creation!
-    """
     def _create_model(self):
         return OneClassSVM(
             kernel=self.hyperparams.get('kernel', 'rbf'),
@@ -372,25 +665,32 @@ class OneClassSVMTrainer(ModelTrainer):
             max_iter=self.hyperparams.get('max_iter', -1)
         )
 
+class AutoEncoderTrainer(ModelTrainer):
+    def _create_model(self):
+        return AutoEncoder(
+            encoder_dims=self.hyperparams.get('encoder_dims', [64, 32, 16]),
+            bottleneck_dim=self.hyperparams.get('bottleneck_dim', 8),
+            epochs=self.hyperparams.get('epochs', 50),
+            batch_size=self.hyperparams.get('batch_size', 32),
+            learning_rate=self.hyperparams.get('learning_rate', 0.001),
+            dropout=self.hyperparams.get('dropout', 0.2),
+            weight_decay=self.hyperparams.get('weight_decay', 0.0001),
+            early_stopping_patience=self.hyperparams.get('early_stopping_patience', 10),
+            validation_split=self.hyperparams.get('validation_split', 0.1),
+            contamination=self.hyperparams.get('contamination', 0.1),
+            activation=self.hyperparams.get('activation', 'relu'),
+            loss=self.hyperparams.get('loss', 'mse'),
+            optimizer=self.hyperparams.get('optimizer', 'adam'),
+            device=self.model_config.get('device', 'cpu'),
+            random_state=self.model_config.get('random_state', 42)
+        )
 
-# ============================================================================
-# FACTORY PATTERN
-# This is the "menu" that maps model names to trainer classes
-# ============================================================================
-
-# This dictionary is the magic selector
-# It says: "if model type is X, use trainer Y"
 MODEL_TRAINERS = {
     'isolation_forest': IsolationForestTrainer,
     'knn_lof': KNNLOFTrainer,
-    'one_class_svm': OneClassSVMTrainer
+    'one_class_svm': OneClassSVMTrainer,
+    'autoencoder': AutoEncoderTrainer
 }
-
-
-# ============================================================================
-# MAIN FUNCTION
-# Look how simple this is now!
-# ============================================================================
 
 def main():
     """
