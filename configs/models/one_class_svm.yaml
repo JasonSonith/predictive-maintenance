@@ -15,7 +15,8 @@ hyperparameters:
   # Upper bound on the fraction of training errors and lower bound on support vectors
   # Should be approximately equal to contamination
   # Range: (0, 1], typically 0.01 to 0.2
-  nu: 0.1
+  # Increased to 0.3 for more sensitivity
+  nu: 0.3
 
   # Kernel coefficient for rbf, poly, sigmoid
   # Options: scale (1 / (n_features * X.var())), auto (1 / n_features), or float
