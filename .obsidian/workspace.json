@@ -1,0 +1,213 @@
+{
+  "main": {
+    "id": "645a8d4a20c38548",
+    "type": "split",
+    "children": [
+      {
+        "id": "58a67dacd1560d35",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "afe5ba89bc37f45e",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "docs/EVALUATE_DESIGN.md",
+                "mode": "source",
+                "source": false
+              },
+              "icon": "lucide-file",
+              "title": "EVALUATE_DESIGN"
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "vertical"
+  },
+  "left": {
+    "id": "3f2b6910c019e457",
+    "type": "split",
+    "children": [
+      {
+        "id": "aa02576a97766d3c",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "d50f11efbc082317",
+            "type": "leaf",
+            "state": {
+              "type": "file-explorer",
+              "state": {
+                "sortOrder": "alphabetical",
+                "autoReveal": false
+              },
+              "icon": "lucide-folder-closed",
+              "title": "Files"
+            }
+          },
+          {
+            "id": "2d6ed9c2871764b4",
+            "type": "leaf",
+            "state": {
+              "type": "search",
+              "state": {
+                "query": "",
+                "matchingCase": false,
+                "explainSearch": false,
+                "collapseAll": false,
+                "extraContext": false,
+                "sortOrder": "alphabetical"
+              },
+              "icon": "lucide-search",
+              "title": "Search"
+            }
+          },
+          {
+            "id": "5800f71d2586b95e",
+            "type": "leaf",
+            "state": {
+              "type": "bookmarks",
+              "state": {},
+              "icon": "lucide-bookmark",
+              "title": "Bookmarks"
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "horizontal",
+    "width": 300
+  },
+  "right": {
+    "id": "a680b2e1915fb110",
+    "type": "split",
+    "children": [
+      {
+        "id": "0e2deb66accab2bd",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "2c67683d47fa2617",
+            "type": "leaf",
+            "state": {
+              "type": "backlink",
+              "state": {
+                "file": "docs/EVALUATE_DESIGN.md",
+                "collapseAll": false,
+                "extraContext": false,
+                "sortOrder": "alphabetical",
+                "showSearch": false,
+                "searchQuery": "",
+                "backlinkCollapsed": false,
+                "unlinkedCollapsed": true
+              },
+              "icon": "links-coming-in",
+              "title": "Backlinks for EVALUATE_DESIGN"
+            }
+          },
+          {
+            "id": "1f87cfa0fcf518db",
+            "type": "leaf",
+            "state": {
+              "type": "outgoing-link",
+              "state": {
+                "file": "docs/EVALUATE_DESIGN.md",
+                "linksCollapsed": false,
+                "unlinkedCollapsed": true
+              },
+              "icon": "links-going-out",
+              "title": "Outgoing links from EVALUATE_DESIGN"
+            }
+          },
+          {
+            "id": "2e377490bd3370ab",
+            "type": "leaf",
+            "state": {
+              "type": "tag",
+              "state": {
+                "sortOrder": "frequency",
+                "useHierarchy": true,
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-tags",
+              "title": "Tags"
+            }
+          },
+          {
+            "id": "ad48f585d692ecc5",
+            "type": "leaf",
+            "state": {
+              "type": "all-properties",
+              "state": {
+                "sortOrder": "frequency",
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-archive",
+              "title": "All properties"
+            }
+          },
+          {
+            "id": "c390ece521361ee7",
+            "type": "leaf",
+            "state": {
+              "type": "outline",
+              "state": {
+                "file": "docs/EVALUATE_DESIGN.md",
+                "followCursor": false,
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-list",
+              "title": "Outline of EVALUATE_DESIGN"
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "horizontal",
+    "width": 300,
+    "collapsed": true
+  },
+  "left-ribbon": {
+    "hiddenItems": {
+      "switcher:Open quick switcher": false,
+      "graph:Open graph view": false,
+      "canvas:Create new canvas": false,
+      "daily-notes:Open today's daily note": false,
+      "templates:Insert template": false,
+      "command-palette:Open command palette": false,
+      "bases:Create new base": false
+    }
+  },
+  "active": "afe5ba89bc37f45e",
+  "lastOpenFiles": [
+    "CLAUDE.md",
+    "README.md",
+    "docs/EVALUATE_DESIGN.md",
+    "artifacts/reports/fd004_iforest/evaluation_report.html",
+    "artifacts/reports/fd004_iforest/metrics.json",
+    "artifacts/reports/ims_ocsvm/evaluation_report.html",
+    "artifacts/reports/ims_ocsvm/metrics.json",
+    "artifacts/reports/fd004_iforest/predictions.csv",
+    "artifacts/reports/fd004_iforest/shap_values.csv",
+    "artifacts/reports/ims_ocsvm/predictions.csv",
+    "artifacts/reports/ims_ocsvm/shap_values.csv",
+    "artifacts/reports/fd003_iforest/evaluation_report.html",
+    "artifacts/reports/fd003_iforest/metrics.json",
+    "docs/diagrams/dfd-diagram.png",
+    "docs/diagrams/Data Flow Diagram (DFD).md",
+    "docs/USAGE_MAKE_FEATURES.md",
+    "docs/TRAINING_GUIDE.md",
+    "docs/TRAINING_CHEATSHEET.md",
+    "docs/REFACTOR_VISUAL.md",
+    "docs/REFACTOR_EXPLANATION.md",
+    "docs/FEATURE_EXTRACTION_SUMMARY.md",
+    "docs/FEATURE_EXTRACTION_CHECKLIST.md",
+    "docs/FEATURE_EXTRACTION.md",
+    "docs/Dataset Breakdown.md"
+  ]
+}
