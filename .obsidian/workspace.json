@@ -13,12 +13,12 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "docs/EVALUATE_DESIGN.md",
+                "file": "CLAUDE.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "EVALUATE_DESIGN"
+              "title": "CLAUDE"
             }
           }
         ]
@@ -185,19 +185,23 @@
   },
   "active": "afe5ba89bc37f45e",
   "lastOpenFiles": [
-    "CLAUDE.md",
-    "README.md",
+    "docs/powerpoint-templates/Example 4.pdf",
+    "docs/powerpoint-templates/Example 3.pdf",
+    "docs/powerpoint-templates/Example 2.pdf",
+    "docs/powerpoint-templates/Example 1.pdf",
+    "docs/conference-templates/Requirements.txt",
+    "docs/conference-templates/New Text Document.txt",
+    "docs/conference-templates/Example.pdf",
+    "docs/conference-templates/som-1.pdf",
+    "docs/powerpoint-templates/A Performance-Oriented Comparison of Neural Network Approaches for Anomaly-based Intrusion Detection.pdf",
+    "docs/powerpoint-templates/Creating an Explainable Intrusion Detection System Using Self Organizing Maps.pdf",
+    "docs/powerpoint-templates/IEEE CIC 2024 Competitive Learning.pdf",
     "docs/EVALUATE_DESIGN.md",
-    "artifacts/reports/fd004_iforest/evaluation_report.html",
-    "artifacts/reports/fd004_iforest/metrics.json",
-    "artifacts/reports/ims_ocsvm/evaluation_report.html",
-    "artifacts/reports/ims_ocsvm/metrics.json",
-    "artifacts/reports/fd004_iforest/predictions.csv",
-    "artifacts/reports/fd004_iforest/shap_values.csv",
-    "artifacts/reports/ims_ocsvm/predictions.csv",
-    "artifacts/reports/ims_ocsvm/shap_values.csv",
-    "artifacts/reports/fd003_iforest/evaluation_report.html",
-    "artifacts/reports/fd003_iforest/metrics.json",
+    "docs/Project-breakdown.md",
+    "docs/Dataset Breakdown.md",
+    "README.md",
+    "CLAUDE.md",
+    "EVALUATION_FIXES_SUMMARY.md",
     "docs/diagrams/dfd-diagram.png",
     "docs/diagrams/Data Flow Diagram (DFD).md",
     "docs/USAGE_MAKE_FEATURES.md",
@@ -207,7 +211,6 @@
     "docs/REFACTOR_EXPLANATION.md",
     "docs/FEATURE_EXTRACTION_SUMMARY.md",
     "docs/FEATURE_EXTRACTION_CHECKLIST.md",
-    "docs/FEATURE_EXTRACTION.md",
-    "docs/Dataset Breakdown.md"
+    "docs/FEATURE_EXTRACTION.md"
   ]
 }

@@ -1,0 +1,25 @@
+Requirements:
+
+Abstract
+Introduction Section
+- All ideas from the proposal assignment
+- Since this is you final report, change any wording from "will do" to "have"
+
+Background and Related Works
+-Same requirements from proposal
+- Minimum of 7 data mining/machine learning related works summarized
+
+Architecture
+- This is effectively the methodology section, but now you have created you system 
+- Architecture diagram
+- Subsection describing each piece of the architecture diagram (ex: data, preprocessing, model, model output)
+
+Results
+- Define the parameters of the experiment
+- Create a table with the results (if applicable)
+- Write about the results
+- Final discussion section that synthesizes your findings
+
+Conclusion
+- Future work
+- Reiterate your contributions and results
