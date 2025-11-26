@@ -63,14 +63,14 @@ def load_ims_data(config):
     print(f"Loaded {len(combined_df)} rows")
     return combined_df
 
-def extract_cwru_metadata(filename, config):
+def extract_cwru_metadata(filename, directory_name, config):
     metadata = {}
     metadata_config = config.get('schema', {}).get('metadata_from_filename', {})
     if not metadata_config:
         return metadata
-    
+
     base_name = pathlib.Path(filename).stem
-    
+
     if metadata_config.get('fault_type', False):
         if base_name.startswith('B'):
             metadata['fault_type'] = 'ball_fault'
@@ -78,7 +78,7 @@ def extract_cwru_metadata(filename, config):
             metadata['fault_type'] = 'inner_race_fault'
         elif base_name.startswith('OR'):
             metadata['fault_type'] = 'outer_race_fault'
-        elif 'normal' in base_name.lower() or 'baseline' in base_name.lower():
+        elif 'normal' in base_name.lower() or 'baseline' in base_name.lower() or 'normal' in directory_name.lower():
             metadata['fault_type'] = 'normal'
         else:
             metadata['fault_type'] = 'unknown'
@@ -87,11 +87,16 @@ def extract_cwru_metadata(filename, config):
         match = re.search(r'(\d{3})', base_name)
         if match:
             metadata['fault_size_mils'] = int(match.group(1))
-    
+        else:
+            metadata['fault_size_mils'] = None
+
     if metadata_config.get('load_hp', False):
         match = re.search(r'_(\d+)__', base_name)
         if match:
             metadata['load_hp'] = int(match.group(1))
+        else:
+            # Default to 0 hp load for files without explicit load specification (e.g., normal baseline)
+            metadata['load_hp'] = 0
     
     if metadata_config.get('sensor_location', False):
         if '_DE_' in base_name:
@@ -120,14 +125,14 @@ def load_cwru_data(config):
         
         for csv_file in csv_files:
             df = pd.read_csv(csv_file)
-            
+
             if column_map:
                 df = df.rename(columns=column_map)
-            
-            metadata = extract_cwru_metadata(csv_file.name, config)
+
+            metadata = extract_cwru_metadata(csv_file.name, input_path.name, config)
             for key, value in metadata.items():
                 df[key] = value
-            
+
             df['source_file'] = csv_file.name
             df['source_directory'] = input_path.name
             dataframes.append(df)
@@ -182,9 +187,14 @@ def load_cmapss_data(config):
 def clean_data(df, config):
     prep_config = config.get('prep', {})
     schema_config = config.get('schema', {})
-    
+
     drop_na = prep_config.get('drop_na', True)
     if drop_na:
+        print(f"Columns with NaN values before dropping:")
+        for col in df.columns:
+            nan_count = df[col].isna().sum()
+            if nan_count > 0:
+                print(f"  {col}: {nan_count} NaN values ({100*nan_count/len(df):.1f}%)")
         df = df.dropna()
         print(f"Dropped missing values: {len(df)} rows remaining")
     else:
