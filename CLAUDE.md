@@ -317,9 +317,11 @@ random_state: 42
 - Threshold calibration (threshold.py) for 10 trained models
 - Model configuration YAMLs (isolation_forest, knn_lof, one_class_svm, autoencoder)
 
-**PLANNED:**
+**COMPLETED:**
 - scripts/evaluate.py (Stage 5)
 - scripts/score_batch.py (Stage 6)
+
+**PLANNED:**
 - dashboards/app.py (Streamlit)
 - Test suite (pytest)
 
@@ -398,6 +400,8 @@ Always include in pipeline runs:
 2. ✅ Stage 2: Feature Engineering (make_features.py) - Features extracted for all datasets
 3. ✅ Stage 3: Model Training (train.py) - 10 models trained across all datasets
 4. ✅ Stage 4: Threshold Calibration (threshold.py) - All models calibrated with optimal thresholds
+5. ✅ Stage 5: Evaluation (evaluate.py) - Metrics and reports generated
+6. ✅ Stage 6: Batch Scoring (score_batch.py) - Production inference implemented
 
 ### Threshold Calibration Results (Stage 4)
 
@@ -436,7 +440,46 @@ All 10 models have been successfully calibrated with their optimal thresholds:
 - One-Class SVM required hyperparameter adjustment (nu=0.3) for stable threshold calibration
 - NASA C-MAPSS FD001 shows slightly higher FAR (0.289 vs 0.2 target) but still acceptable
 
+### Batch Scoring Implementation (Stage 6)
+
+The production inference script (`score_batch.py`) has been implemented with the following capabilities:
+
+**Features:**
+- ✅ Loads trained models (sklearn .joblib and PyTorch .pth)
+- ✅ Auto-detects and loads scalers from report directory
+- ✅ Loads calibrated thresholds from threshold_config.json
+- ✅ Validates input features against training schema
+- ✅ Generates anomaly scores and binary alerts
+- ✅ Saves predictions in dual format (CSV + Parquet)
+- ✅ Generates detailed metadata JSON for reproducibility
+- ✅ Supports threshold override via CLI
+- ✅ Works with all 4 model types (IForest, LOF, SVM, AutoEncoder)
+- ✅ Preserves metadata columns (timestamp, unit_id, etc.)
+
+**Usage Examples:**
+```bash
+# Basic scoring with IMS Isolation Forest
+python scripts/score_batch.py \
+  --model artifacts/models/ims_iforest.joblib \
+  --input data/features/ims_test.csv \
+  --output artifacts/scores/ims_test_scores
+
+# With custom threshold override
+python scripts/score_batch.py \
+  --model artifacts/models/cwru_iforest.joblib \
+  --input data/features/cwru_test.csv \
+  --output artifacts/scores/cwru_test_scores \
+  --threshold 0.55
+
+# With verbose logging
+python scripts/score_batch.py \
+  --model artifacts/models/fd001_iforest.joblib \
+  --input data/features/fd001_test.csv \
+  --output artifacts/scores/fd001_test_scores \
+  --verbose
+```
+
 **Next Steps:**
-- Implement Stage 5: Evaluation (evaluate.py) - Generate comprehensive metrics, plots, and SHAP explanations
-- i finished training the datasets off the models
-- i finished evaluating
+- Implement Streamlit dashboard (dashboards/app.py)
+- Add unit tests for all pipeline stages
+- Production deployment automation

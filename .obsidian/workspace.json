@@ -13,12 +13,12 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "CLAUDE.md",
+                "file": "docs/score_batch_design.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "CLAUDE"
+              "title": "score_batch_design"
             }
           }
         ]
@@ -185,25 +185,27 @@
   },
   "active": "afe5ba89bc37f45e",
   "lastOpenFiles": [
-    "docs/powerpoint-templates/Example 4.pdf",
-    "docs/powerpoint-templates/Example 3.pdf",
-    "docs/powerpoint-templates/Example 2.pdf",
-    "docs/powerpoint-templates/Example 1.pdf",
-    "docs/conference-templates/Requirements.txt",
-    "docs/conference-templates/New Text Document.txt",
-    "docs/conference-templates/Example.pdf",
-    "docs/conference-templates/som-1.pdf",
-    "docs/powerpoint-templates/A Performance-Oriented Comparison of Neural Network Approaches for Anomaly-based Intrusion Detection.pdf",
-    "docs/powerpoint-templates/Creating an Explainable Intrusion Detection System Using Self Organizing Maps.pdf",
-    "docs/powerpoint-templates/IEEE CIC 2024 Competitive Learning.pdf",
+    "artifacts/scores/fd004_iforest_scores_metadata.json",
+    "artifacts/scores/fd004_iforest_scores.parquet",
+    "artifacts/scores/fd004_iforest_scores.csv",
+    "artifacts/scores/fd003_iforest_scores_metadata.json",
+    "artifacts/scores/fd003_iforest_scores.parquet",
+    "artifacts/scores/fd003_iforest_scores.csv",
+    "artifacts/scores/fd002_iforest_scores_metadata.json",
+    "artifacts/scores/fd002_iforest_scores.parquet",
+    "artifacts/scores/fd002_iforest_scores.csv",
+    "artifacts/scores/fd001_iforest_scores_metadata.json",
+    "artifacts/scores/fd001_iforest_scores.parquet",
+    "docs/SCORE_BATCH_IMPLEMENTATION.md",
+    "docs/diagrams/Data Flow Diagram (DFD).md",
+    "docs/score_batch_design.md",
+    "CLAUDE.md",
     "docs/EVALUATE_DESIGN.md",
     "docs/Project-breakdown.md",
     "docs/Dataset Breakdown.md",
     "README.md",
-    "CLAUDE.md",
     "EVALUATION_FIXES_SUMMARY.md",
     "docs/diagrams/dfd-diagram.png",
-    "docs/diagrams/Data Flow Diagram (DFD).md",
     "docs/USAGE_MAKE_FEATURES.md",
     "docs/TRAINING_GUIDE.md",
     "docs/TRAINING_CHEATSHEET.md",
