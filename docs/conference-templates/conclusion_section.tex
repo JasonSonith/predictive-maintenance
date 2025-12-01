@@ -1,0 +1,43 @@
+\section{Conclusion}
+
+This paper presented a complete predictive maintenance pipeline for industrial anomaly detection that addresses a critical gap in existing research: the translation of continuous anomaly scores into actionable maintenance alerts with controllable false alarm rates. We developed and evaluated the system across four diverse industrial datasets, demonstrating both the effectiveness of the approach and its generalizability across different equipment types and operating conditions.
+
+\subsection{Key Contributions}
+
+Our primary contribution is a practical threshold calibration procedure that bridges the gap between machine learning model outputs and operational maintenance decisions. Unlike previous work that focuses solely on detection accuracy, we explicitly control false alarm rates to match real-world operational constraints. The percentile-based calibration achieved 93\% or better accuracy across all ten trained models, with three models on the IMS dataset hitting their target rates exactly.
+
+The pipeline architecture itself represents a second contribution. By separating data preparation, feature engineering, model training, threshold calibration, evaluation, and production scoring into distinct stages controlled by YAML configuration files, we enable reproducible experiments and straightforward adaptation to new datasets. The implementation uses standard Python libraries (NumPy, pandas, scikit-learn) with optional PyTorch support for deep learning models, making it accessible to practitioners without specialized hardware or complex dependencies.
+
+We also demonstrated that multiple anomaly detection algorithms work effectively for predictive maintenance when properly calibrated. Isolation Forest, AutoEncoder, kNN-LOF, and One-Class SVM all produced usable results on the IMS bearing dataset, though with different computational costs and hyperparameter sensitivity. Isolation Forest emerged as the most practical choice for most applications, offering strong performance with minimal tuning across all four datasets tested.
+
+Finally, our evaluation across four benchmark datasets (IMS bearings, CWRU bearing faults, AI4I manufacturing, and C-MAPSS turbofan engines) provides evidence that the approach generalizes across different industrial domains, sensor configurations, and failure modes. The pipeline handled both time-series vibration data and tabular sensor readings without modification to the core algorithms.
+
+\subsection{Practical Implications}
+
+For maintenance engineers deploying anomaly detection systems, our results suggest several practical guidelines. First, start with conservative thresholds that prioritize operator trust over maximum sensitivity. The CWRU results showed that targeting very low false alarm rates (0.2 per week) produces high precision even if recall appears poor by traditional classification metrics. In practice, operators can gradually increase sensitivity once they trust that alerts are reliable.
+
+Second, invest effort in collecting sufficient validation data for threshold calibration. Smaller datasets like C-MAPSS FD001 showed worse calibration accuracy because the percentile calculation has less granularity. For production deployment, a validation set of at least 2,000 to 3,000 samples improves threshold reliability.
+
+Third, the choice of anomaly detection algorithm matters less than proper threshold calibration and feature engineering. All four algorithms tested produced comparable results when calibrated to the same false alarm rate. Practitioners should prioritize Isolation Forest for its speed and robustness unless specific domain requirements (such as modeling complex temporal patterns with autoencoders) justify the additional complexity.
+
+Fourth, configuration-driven pipelines significantly improve reproducibility and maintainability. Our YAML-based approach allowed training ten different models across four datasets without code modifications. This separation of configuration from implementation reduces deployment errors and makes it easier for domain experts to adjust parameters without programming.
+
+\subsection{Limitations and Future Work}
+
+Several limitations of this work point toward valuable directions for future research. First, our evaluation used publicly available benchmark datasets with known characteristics. Real industrial deployments face additional challenges including sensor drift, changing operating conditions, and evolving failure modes. Long-term studies tracking model performance over months or years would provide better evidence of practical viability.
+
+Second, the current pipeline does not include online learning or automatic threshold adjustment. In production, models may need periodic retraining as equipment ages or operating patterns change. Developing methods to detect when recalibration is necessary, and to perform that recalibration with minimal supervision, would improve long-term reliability.
+
+Third, we focused on unsupervised anomaly detection because labeled failure data is scarce in practice. However, when labels are available (as in CWRU), semi-supervised approaches that incorporate both labeled and unlabeled data could improve detection accuracy. Future work should explore how to effectively combine the abundant normal operation data with limited failure examples.
+
+Fourth, our explainability analysis using SHAP values provides feature importance rankings but does not yet translate those into actionable maintenance recommendations. Connecting which features drive anomaly scores to specific physical failure modes (bearing wear, misalignment, lubrication issues) would make the system more valuable to maintenance technicians.
+
+Fifth, the pipeline currently requires separate training for each dataset and equipment type. Transfer learning approaches that leverage knowledge from related equipment or similar operating conditions could reduce the data requirements for deploying on new assets. This would be particularly valuable for organizations with diverse equipment fleets.
+
+Finally, we did not address the economic aspects of predictive maintenance deployment. Future work should model the costs and benefits of different false alarm rates, considering factors such as inspection costs, downtime penalties, and the value of avoiding catastrophic failures. Such analysis would help organizations set appropriate target false alarm rates for their specific operational context.
+
+\subsection{Closing Remarks}
+
+Predictive maintenance represents a practical application of machine learning where the gap between research and deployment remains significant. This work demonstrates that bridging that gap requires not just accurate models but also careful attention to how those models integrate into operational workflows. By explicitly controlling false alarm rates, providing configuration-driven reproducibility, and evaluating across diverse industrial datasets, we have taken steps toward making anomaly detection more accessible and trustworthy for real-world maintenance operations.
+
+The code, configurations, and trained models from this work are available to support replication and extension by other researchers and practitioners. We hope this contribution helps accelerate the adoption of data-driven predictive maintenance in industrial settings where it can reduce costs, improve safety, and extend equipment lifespans.

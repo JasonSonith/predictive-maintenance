@@ -483,3 +483,6 @@ python scripts/score_batch.py \
 - Implement Streamlit dashboard (dashboards/app.py)
 - Add unit tests for all pipeline stages
 - Production deployment automation
+- I added a zip file of a template into the @docs/conference-templates/Data_Mining_Report_Template.zip folder. This is the template I will be using.
+- i finished the report now i want to do the powerpoint
+- i finished the final report on latex, and create figures, now time to make the presentation powerpoint

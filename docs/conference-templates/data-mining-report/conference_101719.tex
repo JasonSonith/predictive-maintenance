@@ -1,0 +1,123 @@
+\documentclass[conference]{IEEEtran}
+\IEEEoverridecommandlockouts
+% The preceding line is only needed to identify funding in the first footnote. If that is unneeded, please comment it out.
+\usepackage{cite}
+\usepackage{amsmath,amssymb,amsfonts}
+\usepackage{algorithmic}
+\usepackage{graphicx}
+\usepackage{textcomp}
+\usepackage{xcolor}
+\usepackage{soul}
+\usepackage{subcaption}
+\usepackage{booktabs, makecell,tabularx}
+\def\BibTeX{{\rm B\kern-.05em{\sc i\kern-.025em b}\kern-.08em
+    T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
+\begin{document}
+
+\title{My Amazing Project Report}
+
+\author{\IEEEauthorblockN{1\textsuperscript{st} Given Name Surname}
+\IEEEauthorblockA{\textit{dept. name of organization (of Aff.)} \\
+\textit{name of organization (of Aff.)}\\
+City, Country \\
+email address or ORCID}
+\and
+\IEEEauthorblockN{2\textsuperscript{nd} Given Name Surname}
+\IEEEauthorblockA{\textit{dept. name of organization (of Aff.)} \\
+\textit{name of organization (of Aff.)}\\
+City, Country \\
+email address or ORCID}}
+
+\maketitle
+
+\begin{abstract}
+This section should be written last. It is a summary of your paper and should cover all of the most important points. This includes the motivation, contributions, important methodology points, results, and conclusions. This is the first paragraph a person will read, so make sure it has all the important info.
+\end{abstract}
+
+\begin{IEEEkeywords}
+keywords, go, here
+\end{IEEEkeywords}
+
+\section{Introduction}
+
+\begin{itemize}
+    \item Hook/Motivation (p1)
+    \item problem statement (p1 - p2)
+    \item Current Solutions (p2 - p4)
+    \item Different solution (pn)
+    \item Contributions
+\end{itemize}
+
+\textcolor{red}{\textbf{Your abstract and introduction should be close to 1 page}}
+
+\section{Background and Related Work}
+
+\subsection{Model(s) you are using}
+This is background information. Write (a) description(s) of model(s) you are using. 1 paragraph (5+ sentences) to show that you understand what the model is and why it is used.
+
+\subsection{Topic based organization for related works}
+You should divide your related works based on topic. For undergrads, a single subsection called "related works`` is fine. Summarize each paper in its own paragraph. It is a good idea to include a strength and weakness for each paper. \textcolor{red}{\textbf{You need at least 5 related works. If you did not do this in the proposal, you should do it now.}} You can cite a paper by copying its bibtex from Google and pasting that code into the refs.bib. Then you can use the \cite{neupane2022explainable} command.
+
+For graduate students, you should divide your related works into topics where possible. For example, Dr. Ables's work is on Explainable Intrusion Detection Systems. This is the conjunction of intrusion detection, explainable artificial intelligence, and explainable intrusion detection. So Dr. Ables typically has those subsections in his papers. \textcolor{red}{\textbf{Graduate students require more background work than undergrads. The minimum will be set to 7. You can organize them however you want.}}
+
+\textcolor{red}{\textbf{Ideally, you get about a 1/2 to 1 page out of this entire section.}}
+
+\subsection{Other Topic if necessary}
+2 or 3 of these works for good organization. You don't need to go crazy.
+
+\subsection{Other other topic if necessary}
+2 or 3 of these works for good organization. You don't need to go crazy.
+
+\subsection{Sythensis}
+This is where you summarize the strengths and weaknesses of all of your related works. You are trying to justify why your contributions are worthy of publication. This is 1 to 2 paragraphs.
+
+\section{Architecture (rename this to be something closer to your topic)}
+
+\begin{figure*}[htbp]
+    \centering
+    \includegraphics[scale=.7]{figures/som_arch.pdf}
+    \vspace*{-3mm}
+    \caption{Architecture for an Explainable Intrusion Detection System (X-IDS) utilizing Self Organizing Maps (SOMs), based on DARPA's recommended architecture for Explainable Artificial Intelligence (XAI) systems \cite{gunning2019darpa}.}
+    \label{fig: architecture}
+\end{figure*}
+
+The first paragraph in this section should act like a transition and introduction into your architecture. You will create an architecture diagram that represents the data mining system you are creating. Using that diagram, you will create subsections that will describe the architecture. Below I will give you a baseline that you can use. Please expand or improve it as you want. \textcolor{red}{\textbf{ Overall, this section should be a page or more.}}
+
+\subsection{Data and Preprocessing}
+Here you will describe your dataset(s). This should include who made it, where it was made, important meta data about it, etc. For example, NSL-KDD is an intrusion detection dataset. It may be important to mention the attack classes/types that are present in it. Remote to Local (R2L), User to Root (U2R), Denial of Service (DoS), ... .
+
+You should describe your preprocessing as well. You want a reader to be able to recreate your experiment. If you have any special preprocessing requirements, you should also state why you are doing that. This also includes how you are sampling your dataset.
+
+\subsection{Modeling}
+This is the section where you describe your data mining model. State how you are getting or building the model (Tensorflow, PyTorch, Scikit-Learn, downloadable online, ...). State how you are finding the best parameters and what parameters you used during your experiment. State any quality metrics associated with training your model. For Dr. Ables's Self Organizing Map (SOM) paper, he mentioned metrics that are specific to SOMs such as topographical error and quantization error. Since most people don't know about those metrics, he also described them.
+
+It is highly recommended to collect data such as the time it takes to train, potentially cpu and ram usage, and model loss. These are all things you can describe here. Also state why you are collecting that data.
+
+\subsection{Post Modeling}
+This section is where you describe how you are using your trained model. What does your model output? How are you going to measure that the model is performing well/poor? What metrics are you using to measure performance? What information are you collecting \textbf{after} the model has been trained while you are using test data?
+
+
+
+\section{Results}
+\label{sec: results}
+Transition and introduce the results section. This is where you will discuss and display your results. Discussion implies that you are critically thinking about your model's outputs. You should not just re-hash what you put in a table.
+
+\input{tables/example_table}
+
+Speaking of tables, you should have a table (if applicable) to summarize your result. This table should be referenced somewhere in this section. You can reference a table, image, or section by giving it a label (see just below the "Results`` section command). Then you can use the \ref{sec: results} command.  You can easily make a table by using this website: 
+\\
+https://www.tablesgenerator.com/
+\\
+
+Dr. Ables does not care if it doesn't look good, but you should try to make it look nice.
+
+\section{Conclusion and Future Work}
+Transition into your conclusion section. Summarize the important things that you did in your project. Restate the important results. Mention some potential future improvements that you could do for this project if you had more time.
+
+
+
+
+\bibliographystyle{unsrt}
+\bibliography{refs}
+
+\end{document}

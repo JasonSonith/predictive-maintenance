@@ -1,0 +1,31 @@
+% Option 1: Reduce width and rotate for landscape (RECOMMENDED)
+\begin{figure}[p] % 'p' puts it on its own page
+    \centering
+    \includegraphics[angle=90,width=0.95\textheight]{figures/ml_pipeline_flowchart.pdf}
+    \caption{Predictive Maintenance Pipeline Architecture. The system processes four industrial datasets (IMS, CWRU, AI4I, C-MAPSS) through six stages: (1) data preparation with YAML configuration, (2) feature engineering with windowed time-domain features, (3) model training with four anomaly detection algorithms (Isolation Forest, kNN-LOF, One-Class SVM, Autoencoder), (4) threshold calibration targeting specific false alarm rates, (5) evaluation and reporting with SHAP explainability, and (6) production scoring for real-time anomaly detection. The configuration-driven design (right panel) enables reproducible experiments across different datasets and models.}
+    \label{fig:pipeline_architecture}
+\end{figure}
+
+% Option 2: Reduce width to 85% without rotation
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.85\textwidth]{figures/ml_pipeline_flowchart.pdf}
+    \caption{[Same caption as above]}
+    \label{fig:pipeline_architecture}
+\end{figure}
+
+% Option 3: Full page width, allow it to break across pages if needed
+\begin{figure}[p]
+    \centering
+    \includegraphics[width=\textwidth,height=0.9\textheight,keepaspectratio]{figures/ml_pipeline_flowchart.pdf}
+    \caption{[Same caption as above]}
+    \label{fig:pipeline_architecture}
+\end{figure}
+
+% Option 4: Scale to fit page margins (safest)
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.9\textwidth,height=0.75\textheight,keepaspectratio]{figures/ml_pipeline_flowchart.pdf}
+    \caption{[Same caption as above]}
+    \label{fig:pipeline_architecture}
+\end{figure}

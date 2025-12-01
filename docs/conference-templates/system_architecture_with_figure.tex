@@ -1,0 +1,60 @@
+\section{System Architecture}
+
+The predictive maintenance pipeline follows a six-stage workflow designed for reproducibility and flexibility across different industrial datasets. Figure~\ref{fig:pipeline_architecture} illustrates the complete system architecture from raw sensor data to production scoring. Each stage is implemented as a standalone Python script controlled through YAML configuration files, allowing the system to adapt to new datasets without modifying code. The following subsections describe the datasets, preprocessing methodology, model training approach, and post-modeling evaluation strategy.
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=\textwidth]{figures/ml_pipeline_flowchart.pdf}
+    \caption{Predictive Maintenance Pipeline Architecture. The system processes four industrial datasets (IMS, CWRU, AI4I, C-MAPSS) through six stages: (1) data preparation with YAML configuration, (2) feature engineering with windowed time-domain features, (3) model training with four anomaly detection algorithms (Isolation Forest, kNN-LOF, One-Class SVM, Autoencoder), (4) threshold calibration targeting specific false alarm rates, (5) evaluation and reporting with SHAP explainability, and (6) production scoring for real-time anomaly detection. The configuration-driven design (right panel) enables reproducible experiments across different datasets and models.}
+    \label{fig:pipeline_architecture}
+\end{figure}
+
+\subsection{Data and Preprocessing}
+
+This work evaluates anomaly detection across four benchmark datasets spanning different industrial domains and data characteristics. Each dataset presents unique challenges that test how well the pipeline generalizes.
+
+\textbf{IMS Bearing Dataset.} The IMS (Intelligent Maintenance Systems) dataset was collected at the University of Cincinnati and made publicly available through NASA's Prognostics Data Repository~\cite{nasa_ims}. It contains vibration recordings from four bearings that ran continuously until they failed under constant load conditions. Eight accelerometers sampled at 20 kHz captured vibration signals over approximately 35 days until bearing failure. Unlike labeled datasets, IMS provides only raw time-series data. The first portion of recordings (when bearings are healthy) serves as the ``normal'' training set, while later recordings capture degradation and failure. This unsupervised setup reflects real-world scenarios where failure examples are scarce or unavailable.
+
+\textbf{CWRU Bearing Dataset.} Case Western Reserve University's Bearing Data Center provides a widely-used benchmark for fault classification~\cite{cwru}. The dataset includes vibration signals from bearings with artificially introduced faults of various types (ball, inner race, outer race) and sizes (0.007, 0.014, and 0.021 inches diameter). Data was collected at 12 kHz from drive-end and fan-end sensors under loads ranging from 0 to 3 horsepower. The presence of labeled fault categories allows for supervised evaluation metrics alongside anomaly detection.
+
+\textbf{AI4I 2020 Predictive Maintenance Dataset.} The AI4I dataset, available from the UCI Machine Learning Repository~\cite{uci_ai4i_2020}, contains synthetic manufacturing process data modeled after real industrial conditions. Each of the 10,000 samples represents a production cycle with five sensor measurements: air temperature, process temperature, rotational speed, torque, and tool wear time. Five failure modes are labeled: heat dissipation failure, power failure, overstrain failure, tool wear failure, and random failure. Unlike the time-series datasets, AI4I provides tabular data that does not require windowing.
+
+\textbf{NASA C-MAPSS Dataset.} The Commercial Modular Aero-Propulsion System Simulation (C-MAPSS) dataset from NASA's Prognostics Center of Excellence simulates turbofan engine degradation~\cite{nasa_cmapss}. The dataset includes four subsets (FD001 through FD004) with varying operating conditions and fault modes. Each subset contains sensor readings from multiple engines that ran from healthy operation until failure. Twenty-one sensor measurements and three operational settings are recorded per engine cycle. For this work, Remaining Useful Life (RUL) values are capped at 125 cycles to prevent early-life samples from dominating the training distribution.
+
+\textbf{Preprocessing Pipeline.} Raw data goes through format-specific loading and cleaning using the \texttt{prep\_data.py} script. For IMS data, timestamps are extracted from filenames (format: YYYY.MM.DD.HH.MM.SS), and the eight vibration channels are loaded from tab-separated files. CWRU preprocessing extracts fault metadata (type, size, load, sensor location) from the filename structure. AI4I requires minimal preprocessing beyond column renaming and categorical encoding. C-MAPSS files use whitespace-delimited columns with no headers, requiring explicit column assignment.
+
+\textbf{Feature Engineering.} Time-series datasets (IMS, CWRU, C-MAPSS) undergo windowed feature extraction using \texttt{make\_features.py}. A sliding window of 2048 samples with 1024-sample stride (50\% overlap) segments continuous signals into fixed-length frames. From each window, the following time-domain features are computed per channel: mean, standard deviation, root mean square (RMS), peak-to-peak amplitude, minimum, maximum, kurtosis, skewness, and crest factor. This transforms raw vibration signals into compact feature vectors suitable for machine learning models. The AI4I dataset uses its tabular features directly without windowing.
+
+\textbf{Data Splitting.} Splitting strategies vary by dataset to prevent data leakage:
+
+\begin{itemize}
+    \item \textbf{Time-based splitting} (IMS): The first 60\% of chronologically-ordered files form the training set (healthy operation), 10\% for validation, and 30\% for testing (includes degradation and failure periods). Only the first 20 files define the ``normal baseline'' for model training.
+    \item \textbf{Stratified random splitting} (CWRU, AI4I): Samples are randomly assigned to train (70\%), validation (15\%), and test (15\%) sets while maintaining class balance through stratification by fault type.
+    \item \textbf{Unit-based holdout} (C-MAPSS): Entire engine units are assigned to splits, ensuring all cycles from a single engine stay together. This prevents the model from learning engine-specific patterns rather than degradation signatures.
+\end{itemize}
+
+\subsection{Modeling}
+
+Four anomaly detection algorithms were implemented to evaluate different detection approaches. All models except the autoencoder use scikit-learn, with training managed through a unified \texttt{ModelTrainer} base class in \texttt{train.py}.
+
+\textbf{Isolation Forest.} The Isolation Forest algorithm detects anomalies by measuring how easily a sample can be isolated from the rest of the data~\cite{liu2012iforest}. An ensemble of 100 isolation trees recursively partitions the feature space. Anomalous points require fewer splits to isolate and therefore have shorter average path lengths. The contamination parameter was set to 0.1, and all features were used for tree construction (\texttt{max\_features=1.0}).
+
+\textbf{Local Outlier Factor (LOF).} LOF computes anomaly scores based on local density deviation~\cite{breunig2000lof}. Each sample's local density is compared to its 20 nearest neighbors using Euclidean distance. Points with substantially lower density than their neighbors receive higher outlier scores. The \texttt{novelty=True} setting enables prediction on unseen test data.
+
+\textbf{One-Class SVM.} The One-Class Support Vector Machine learns a decision boundary that encloses the training data~\cite{scholkopf2001ocsvm}. Using a radial basis function (RBF) kernel with \texttt{gamma='scale'}, the model finds a hyperplane that separates normal samples from potential anomalies. The \texttt{nu} parameter (set to 0.05 for most experiments, increased to 0.3 for IMS) controls the upper bound on the fraction of training errors and the lower bound on support vectors.
+
+\textbf{Autoencoder.} A PyTorch neural network learns a compressed representation of normal data. The encoder (layers: 64, 32, 16, 8 neurons) compresses input features to an 8-dimensional bottleneck, and the decoder reconstructs the original input. Training minimizes mean squared error (MSE) between input and reconstruction using the Adam optimizer (learning rate: 0.001) for up to 50 epochs with early stopping (patience: 10 epochs). Anomalies produce higher reconstruction error because the model has not learned their patterns. Dropout (0.2) and weight decay (0.0001) provide regularization.
+
+\textbf{Training Protocol.} All models train on ``normal'' data only for unsupervised anomaly detection. Standard scaling (zero mean, unit variance) normalizes features before training, with the scaler fitted only on training data to prevent information leakage. Random seeds are fixed at 42 for reproducibility. Training metadata, including git commit hashes, configuration snapshots, and timing information, are logged to JSON files in each model's report directory.
+
+\subsection{Threshold Calibration and Evaluation}
+
+Anomaly detection models output continuous scores rather than binary decisions. The \texttt{threshold.py} script calibrates decision thresholds to achieve target false alarm rates (FAR), while \texttt{evaluate.py} generates comprehensive performance reports.
+
+\textbf{Threshold Calibration Methodology.} The calibration process converts anomaly scores to binary alerts while controlling false alarm frequency. Given a target FAR (specified as alarms per week, such as 0.2 per week), the threshold is set at the percentile of validation set scores that produces the desired alarm rate. For example, to achieve 0.2 false alarms per week with 168 samples per week, the threshold is placed at the $(0.2/168) \times 100 = 0.119$th percentile. This approach aligns with industrial alarm management standards such as ISA-18.2, which recommend limiting nuisance alarms to maintain operator trust. Table~\ref{tab:threshold_results} summarizes the calibration results across all trained models.
+
+\textbf{Evaluation Metrics.} For supervised datasets (CWRU, AI4I), standard classification metrics are computed: precision, recall, F1 score, accuracy, and area under the ROC and precision-recall curves. Precision-recall curves are preferred over ROC curves for imbalanced datasets where anomalies are rare, since ROC-AUC can be misleadingly optimistic when true negatives dominate~\cite{saito2015pr}. For unsupervised settings (IMS, C-MAPSS), evaluation focuses on the false alarm rate and anomaly score distributions.
+
+\textbf{Explainability.} SHAP (SHapley Additive exPlanations) values identify which features contribute most to anomaly scores~\cite{lundberg2017shap}. For Isolation Forest models, TreeExplainer computes exact SHAP values efficiently. Other model types use KernelExplainer with a sampled background dataset. Feature importance summaries and per-sample explanations are saved alongside evaluation reports, allowing operators to understand why specific alerts were triggered.
+
+\textbf{Production Scoring.} The \texttt{score\_batch.py} script provides production inference capability. It loads trained models, applies the fitted scaler, generates anomaly scores, and produces binary alerts using the calibrated threshold. Output includes both CSV and Parquet formats, along with metadata documenting the model version and threshold configuration used. This enables deployment for ongoing equipment monitoring with full audit trails.

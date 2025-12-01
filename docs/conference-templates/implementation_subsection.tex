@@ -1,0 +1,13 @@
+\subsection{Implementation}
+
+The pipeline is implemented in Python 3.10+ using standard scientific computing libraries to ensure accessibility and reproducibility. Data processing leverages NumPy (version 1.24+) and pandas (version 2.0+) for efficient manipulation of large datasets, with PyArrow providing optimized Parquet file format support for fast I/O operations on the high-dimensional IMS bearing data.
+
+Model training employs scikit-learn (version 1.3+) for three of the four algorithms: Isolation Forest, kNN-LOF, and One-Class SVM. The AutoEncoder implementation uses PyTorch (version 2.0+) for flexibility in neural network architecture design. All models support CPU-only execution, making the system deployable on standard laptops or edge devices without GPU requirements.
+
+Feature importance analysis relies on the SHAP library (version 0.42+) to generate consistent explanations across different model types. TreeExplainer provides exact SHAP values for Isolation Forest models efficiently, while KernelExplainer handles the neural network-based AutoEncoder with sampled approximations.
+
+Configuration management uses PyYAML to parse the dataset and model specification files described in Section 3.1. This configuration-driven approach separates parameters from code, enabling reproducible experiments and straightforward adaptation to new datasets. Each pipeline stage (preparation, feature engineering, training, calibration, evaluation, scoring) runs as an independent script that reads configuration, processes data, and saves outputs to standardized locations.
+
+Visualization and reporting employ matplotlib and plotly for generating evaluation plots, with the Rich library providing enhanced console output during training. Model persistence uses joblib for scikit-learn models and PyTorch's native save format for neural networks, ensuring efficient serialization of trained parameters.
+
+The complete implementation, including all configuration files and trained models, consists of approximately 2,500 lines of Python code organized into modular scripts. Training times range from under 1 minute for Isolation Forest on the AI4I dataset to approximately 15 minutes for the AutoEncoder on the full IMS dataset when run on a modern laptop CPU.
